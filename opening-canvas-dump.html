@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opening - 杨慧鑫</title>
+    <link rel="stylesheet" href="/assets/css/custom.css?v=1775659874">
+    
+</head>
+<body class="opening-page-body">
+    <nav class="nav">
+        <div class="container nav-shell">
+            <a class="brand-lockup" href="/">
+                <strong>杨慧鑫</strong>
+                <span>广告美术 | 品牌视觉 | AIGC 视觉方向持续实践</span>
+            </a>
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a href="/">首页</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/about/">关于我</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/works/aigc-lab-roadmap/">AIGC 方向</a>
+                </li>
+                
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <section class="opening-shell opening-shell--page" data-opening="">
+    <div class="container">
+        <div class="opening-panel" data-open-home="" role="button" tabindex="0" aria-label="进入首页">
+            <h1 class="opening-title">杨慧鑫作品集开屏</h1>
+            <div class="opening-visual" data-opening-scene="" aria-hidden="true">
+                <canvas class="opening-canvas" data-opening-canvas="" width="756" height="525"></canvas>
+
+                <div class="opening-overlay">
+                    <div class="opening-overlay__footer">
+                        <span class="opening-overlay__enter">Enter Portfolio</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="opening-divider" aria-hidden="true">
+            <span>deep sea editorial opening</span>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const openingTrigger = document.querySelector('[data-open-home]');
+    const enterHome = function() {
+        window.location.href = "/?entered=1";
+    };
+
+    if (!openingTrigger) {
+        return;
+    }
+
+    openingTrigger.addEventListener('click', enterHome);
+    openingTrigger.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            enterHome();
+        }
+    });
+});
+</script>
+<script>
+window.__OPENING_ASSET_VERSION__ = "1775659874";
+</script>
+<script type="module" src="/assets/js/opening-canvas.js?v=1775659874"></script>
+
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-shell">
+            <div>
+                <strong>杨慧鑫</strong>
+                <div>广告美术 | 品牌视觉 | AIGC 视觉方向持续实践</div>
+            </div>
+            <div>
+                <div>mojimo.cc@gmail.com</div>
+                <div>（+86）15800440416</div>
+            </div>
+        </div>
+    </footer>
+
+ </body></html>

@@ -4,77 +4,141 @@ title: 关于我
 permalink: /about/
 ---
 
-<style>
-.about-container {
-    max-width: 800px;
-    margin: 120px auto 0;
-    padding: 0 20px;
-}
-
-.about-section {
-    margin-bottom: 40px;
-}
-
-.skills-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.skill-item {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    text-align: center;
-}
-</style>
-
-<div class="about-container">
-    <div class="about-section">
-        <h1>关于我</h1>
-        <p>我是杨慧鑫，一位拥有四年经验的资深广告艺术指导。在这个充满创意和挑战的领域中，我始终保持着对艺术的热情和对完美的追求。</p>
-    </div>
-
-    <div class="about-section">
-        <h2>专业技能</h2>
-        <div class="skills-list">
-            <div class="skill-item">视觉策划</div>
-            <div class="skill-item">艺术指导</div>
-            <div class="skill-item">品牌视觉构建</div>
-            <div class="skill-item">创意团队管理</div>
-            <div class="skill-item">跨部门协作</div>
-            <div class="skill-item">设计软件应用</div>
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero__panel">
+            <p class="eyebrow">Profile</p>
+            <h1>广告美术背景，正在把 AIGC 接进真实视觉流程</h1>
+            <p class="lead">过去 4 年主要做广告与商业视觉相关工作，熟悉品牌调性、提案页面、Campaign 画面和物料表达。当前重点是继续把 AIGC 用进方向探索、出图和精修流程，让结果更贴近真实业务。</p>
         </div>
     </div>
+</section>
 
-    <div class="about-section">
-        <h2>工作经验</h2>
-        <p>在过去的几年里，我有幸为众多知名品牌提供服务，包括：</p>
-        <ul>
-            <li>奢侈品牌：雅诗兰黛、Rémy Martin、歌帝梵</li>
-            <li>科技品牌：小米、vivo、科大讯飞</li>
-            <li>食品饮料：百事、康师傅、元气森林</li>
-            <li>餐饮品牌：必胜客、麦当劳、KFC</li>
-            <li>零售品牌：天猫、盒马鲜生、良品铺子</li>
-        </ul>
-    </div>
+<section class="section section--tight">
+    <div class="container about-layout">
+        <div class="markdown-content">
+            <h2>职业概览</h2>
+            <p>我更像是以广告美术和商业视觉为底的设计师，而不是只依赖某个工具出图的人。平时会先看品牌、受众和传播场景，再决定画面语言、参考系统和最终表达方式。</p>
 
-    <div class="about-section">
-        <h2>工作理念</h2>
-        <p>我深信优秀的视觉创意源于对品牌深刻的理解和独特的艺术表达。在每个项目中，我都致力于：</p>
-        <ul>
-            <li>深入理解品牌核心价值</li>
-            <li>创新视觉表现手法</li>
-            <li>注重细节完善</li>
-            <li>保持高效团队协作</li>
-        </ul>
-    </div>
+            <ul>
+                <li>4 年广告与商业视觉相关经验</li>
+                <li>熟悉品牌视觉、包装、Campaign、产品表达和提案页面整理</li>
+                <li>能独立完成方向梳理、画面建立、方案页表达和视觉交付整理</li>
+                <li>正在把 AIGC 接进概念探索、图像生成、精修统一和提案流程</li>
+            </ul>
 
-    <div class="about-section">
-        <h2>联系方式</h2>
-        <p>电话：{{ site.social.phone }}</p>
-        <p>邮箱：{{ site.social.email }}</p>
-        <p>地址：静安区共和新路</p>
+            <h2>我通常怎么推进项目</h2>
+            <ol>
+                <li>先对齐品牌调性、目标人群和传播场景，明确画面需要解决什么问题。</li>
+                <li>整理参考、情绪板和方向关键词，让视觉判断先变得可讨论。</li>
+                <li>推进核心画面、版式与提案页面，把想法整理成更完整的方案。</li>
+                <li>在合适的阶段用 AIGC 提高方向探索、出图和精修效率，但最终仍以结果可用性为判断标准。</li>
+            </ol>
+
+            <h2>我适合补位的工作内容</h2>
+            <ul>
+                <li>品牌、包装、Campaign 与提案视觉的方向整理和画面建立</li>
+                <li>参考收集、情绪板、方案页与核心视觉的整体表达</li>
+                <li>AI 辅助出图、风格统一、结果筛选、修图与交付整理</li>
+                <li>与策划、客户或项目同事协同，把想法推进成可讨论、可执行的方案</li>
+            </ul>
+
+            <h2>为什么会继续补 AIGC</h2>
+            <p>对我来说，AIGC 的价值不在于替代设计，而在于加快前期方向探索、提升提案阶段的沟通效率，也为品牌视觉带来更多可控的尝试空间。它应该服务项目，而不是抢走项目本身。</p>
+
+            <h2>目前重点投递的岗位</h2>
+            <p>广告美术、视觉设计、品牌视觉、AIGC 视觉设计、AI 创意设计这几类岗位，都是我当前重点关注的方向。对我来说，最合适的机会通常是既看重商业审美，也愿意接受设计师把 AI 真正接进流程的团队。</p>
+        </div>
+
+        <div class="detail-grid">
+            <section class="detail-card">
+                <h3>快速概览</h3>
+                <ul class="list-reset fact-list">
+                    <li><strong>经验年限</strong><span>4 年</span></li>
+                    <li><strong>所在城市</strong><span>{{ site.social.location }}</span></li>
+                    <li><strong>项目类型</strong><span>品牌 / 包装 / Campaign / 产品表达</span></li>
+                    <li><strong>工作重点</strong><span>画面建立、提案表达、AI 辅助出图与精修</span></li>
+                </ul>
+            </section>
+
+            <section class="detail-card">
+                <h3>招聘关键词</h3>
+                <div class="tag-list">
+                    <span>广告美术</span>
+                    <span>品牌视觉</span>
+                    <span>包装设计</span>
+                    <span>Campaign 画面</span>
+                    <span>视觉提案</span>
+                    <span>方案表达</span>
+                </div>
+            </section>
+
+            <section class="detail-card">
+                <h3>工具与流程</h3>
+                <div class="tag-list">
+                    <span>Photoshop</span>
+                    <span>Midjourney / 生图类工具</span>
+                    <span>图像生成</span>
+                    <span>LoRA 应用</span>
+                    <span>ComfyUI 基础</span>
+                    <span>风格统一</span>
+                    <span>图像精修</span>
+                    <span>AI 视觉提案</span>
+                </div>
+            </section>
+
+            <section class="detail-card">
+                <h3>协作方式</h3>
+                <p>沟通时会先把方向依据、参考系统和画面判断讲清楚，再推进出图和页面整理，减少只围绕成图本身反复试错。</p>
+            </section>
+
+            <section class="detail-card">
+                <h3>我更关心什么</h3>
+                <p>比起“会不会一个工具”，我更关心画面是否成立、方向是否准确、结果是否真的能拿去提案或落地。</p>
+            </section>
+
+            <section class="detail-card contact-card">
+                <h3>联系方式</h3>
+                <p>邮箱：<a href="mailto:{{ site.social.email }}">{{ site.social.email }}</a></p>
+                <p>电话：{{ site.social.phone }}</p>
+                <p>城市：{{ site.social.location }}</p>
+            </section>
+
+            <section class="detail-card">
+                <h3>正在寻找的团队</h3>
+                <p>重视品牌感、提案质量和执行完成度，同时愿意把 AI 当成新方法而不是噱头的团队，会和我更匹配。</p>
+            </section>
+        </div>
     </div>
-</div> 
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section__head">
+            <div>
+                <span class="kicker">Experience</span>
+                <h2>我更熟悉的项目与交付语境</h2>
+            </div>
+            <p>项目经验覆盖消费品、食品包装、品牌表达、空间与产品方向，也包含提案页面和视觉延展整理，能在不同业务语境下切换表达重点。</p>
+        </div>
+
+        <div class="info-grid">
+            <article class="info-card">
+                <h3>食品与消费品包装</h3>
+                <p>关注货架识别度、产品感知和品牌调性的统一，让包装既有吸引力，也不脱离销售场景。</p>
+            </article>
+            <article class="info-card">
+                <h3>品牌与提案视觉</h3>
+                <p>擅长把策略语言翻译成视觉方向，让提案页面、核心画面和延展物料保持同一套气质。</p>
+            </article>
+            <article class="info-card">
+                <h3>产品与场景表达</h3>
+                <p>会从产品特征、使用语境和传播需求出发，建立更容易被感知和记住的视觉概念。</p>
+            </article>
+            <article class="info-card">
+                <h3>AIGC 辅助提案</h3>
+                <p>把 AI 用在方向探索、出图补充和精修统一上，优先帮助提案效率和视觉完整度，而不是单独展示工具。</p>
+            </article>
+        </div>
+    </div>
+</section>

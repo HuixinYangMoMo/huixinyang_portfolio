@@ -4,75 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
-    <style>
-        /* 导航栏样式 */
-        .nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .nav-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-        }
-
-        .nav-item a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .nav-item a:hover {
-            color: #007bff;
-        }
-
-        /* 页脚样式 */
-        .footer {
-            background: #f8f9fa;
-            padding: 2rem;
-            text-align: center;
-            margin-top: 4rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .nav-list {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}?v={{ site.time | date: '%s' }}">
     {% if page.custom_css %}
         <link rel="stylesheet" href="{{ page.custom_css | relative_url }}">
     {% endif %}
 </head>
-<body>
+<body{% if page.permalink == '/opening/' %} class="opening-page-body"{% endif %}>
     <nav class="nav">
-        <ul class="nav-list">
-            {% for item in site.navigation %}
-            <li class="nav-item">
-                <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
-            </li>
-            {% endfor %}
-        </ul>
+        <div class="container nav-shell">
+            <a class="brand-lockup" href="{{ '/' | relative_url }}">
+                <strong>{{ site.title }}</strong>
+                <span>{{ site.description }}</span>
+            </a>
+            <ul class="nav-list">
+                {% for item in site.navigation %}
+                <li class="nav-item">
+                    <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
     </nav>
 
     <main>
@@ -80,9 +31,15 @@
     </main>
 
     <footer class="footer">
-        <div class="container">
-            <p>© {{ site.time | date: '%Y' }} {{ site.title }}. All rights reserved.</p>
-            <p>联系方式：{{ site.social.email }} | {{ site.social.phone }}</p>
+        <div class="container footer-shell">
+            <div>
+                <strong>{{ site.title }}</strong>
+                <div>{{ site.description }}</div>
+            </div>
+            <div>
+                <div>{{ site.social.email }}</div>
+                <div>{{ site.social.phone }}</div>
+            </div>
         </div>
     </footer>
 </body>

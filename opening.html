@@ -1,0 +1,50 @@
+---
+layout: default
+title: Opening
+permalink: /opening/
+---
+
+<section class="opening-shell opening-shell--page" data-opening>
+    <div class="container">
+        <div class="opening-panel" data-open-home role="button" tabindex="0" aria-label="进入首页">
+            <h1 class="opening-title">杨慧鑫作品集开屏</h1>
+            <div class="opening-visual" data-opening-scene aria-hidden="true">
+                <canvas class="opening-canvas" data-opening-canvas width="1000" height="780"></canvas>
+
+                <div class="opening-overlay">
+                    <div class="opening-overlay__footer">
+                        <span class="opening-overlay__enter">Enter Portfolio</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="opening-divider" aria-hidden="true">
+            <span>deep sea editorial opening</span>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const openingTrigger = document.querySelector('[data-open-home]');
+    const enterHome = function() {
+        window.location.href = "{{ '/' | relative_url }}?entered=1";
+    };
+
+    if (!openingTrigger) {
+        return;
+    }
+
+    openingTrigger.addEventListener('click', enterHome);
+    openingTrigger.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            enterHome();
+        }
+    });
+});
+</script>
+<script>
+window.__OPENING_ASSET_VERSION__ = "{{ site.time | date: '%s' }}";
+</script>
+<script type="module" src="{{ '/assets/js/opening-canvas.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>

@@ -3,78 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YOUR-TITLE - 杨慧鑫的作品集</title>
-    <style>
-        /* 导航栏样式 */
-        .nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .nav-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-        }
-
-        .nav-item a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .nav-item a:hover {
-            color: #007bff;
-        }
-
-        /* 页脚样式 */
-        .footer {
-            background: #f8f9fa;
-            padding: 2rem;
-            text-align: center;
-            margin-top: 4rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .nav-list {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-            }
-        }
-    </style>
+    <title>YOUR-TITLE - 杨慧鑫</title>
+    <link rel="stylesheet" href="/assets/css/custom.css?v=1775664739">
     
 </head>
 <body>
     <nav class="nav">
-        <ul class="nav-list">
-            
-            <li class="nav-item">
-                <a href="/">首页</a>
-            </li>
-            
-            <li class="nav-item">
-                <a href="/about/">关于我</a>
-            </li>
-            
-        </ul>
+        <div class="container nav-shell">
+            <a class="brand-lockup" href="/">
+                <strong>杨慧鑫</strong>
+                <span>广告美术 | 品牌视觉 | AIGC 视觉方向持续实践</span>
+            </a>
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a href="/">首页</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/about/">关于我</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/works/aigc-lab-roadmap/">AIGC 方向</a>
+                </li>
+                
+            </ul>
+        </div>
     </nav>
 
     <main>
@@ -83,9 +38,15 @@
     </main>
 
     <footer class="footer">
-        <div class="container">
-            <p>© 2025 杨慧鑫的作品集. All rights reserved.</p>
-            <p>联系方式：mojimo.cc@gmail.com | （+86） 15800440416</p>
+        <div class="container footer-shell">
+            <div>
+                <strong>杨慧鑫</strong>
+                <div>广告美术 | 品牌视觉 | AIGC 视觉方向持续实践</div>
+            </div>
+            <div>
+                <div>mojimo.cc@gmail.com</div>
+                <div>（+86）15800440416</div>
+            </div>
         </div>
     </footer>
 </body>

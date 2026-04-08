@@ -1,8 +1,12 @@
-title: 杨慧鑫的作品集
-description: 广告艺术指导 | 视觉创意
+title: 杨慧鑫
+description: 广告美术 | 品牌视觉 | AIGC 视觉方向持续实践
 baseurl: ""
-url: ""
+url: "https://huixinyangmomo.github.io/huixinyang_portfolio"
+lang: zh-CN
+timezone: Asia/Shanghai
 markdown: kramdown
+author:
+  name: 杨慧鑫
 
 # 资源路径设置
 sass:
@@ -37,8 +41,11 @@ navigation:
     url: /
   - title: 关于我
     url: /about/
+  - title: AIGC 方向
+    url: /works/aigc-lab-roadmap/
 
 # 社交媒体链接
 social:
   email: mojimo.cc@gmail.com
   phone: （+86）15800440416
+  location: 上海

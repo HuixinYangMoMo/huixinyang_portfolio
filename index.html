@@ -4,150 +4,79 @@ title: 作品集
 permalink: /
 ---
 
-<style>
-.works-container {
-    max-width: 1200px;
-    margin: 120px auto 0;
-    padding: 0 20px;
-}
-
-.works-header {
-    text-align: center;
-    margin-bottom: 60px;
-}
-
-.works-title {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-}
-
-.works-description {
-    color: #666;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.works-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-}
-
-.work-card {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-}
-
-.work-card:hover {
-    transform: translateY(-5px);
-}
-
-.work-card img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-}
-
-.work-card-content {
-    padding: 20px;
-    background: white;
-}
-
-.work-card-title {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-}
-
-.work-card-meta {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.work-card-description {
-    margin-top: 1rem;
-    color: #444;
-    line-height: 1.6;
-}
-
-.category-filter {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 40px;
-}
-
-.filter-button {
-    padding: 8px 16px;
-    border: none;
-    background: #f8f9fa;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.filter-button:hover,
-.filter-button.active {
-    background: #007bff;
-    color: white;
-}
-</style>
-
-<div class="works-container">
-    <header class="works-header">
-        <h1 class="works-title">作品集</h1>
-        <p class="works-description">展示我的广告创意作品，包括品牌视觉设计、广告摄影等项目（持续更新中）。</p>
-    </header>
-
-    <div class="category-filter">
-        <button class="filter-button active">全部</button>
-        <button class="filter-button">广告摄影</button>
-        <button class="filter-button">视觉创意</button>
-    </div>
-
-    <div class="works-grid">
-        {% for work in site.works %}
-        <a href="{{ work.url | relative_url }}" class="work-card">
-            {% if work.featured_image %}
-            <img src="{{ work.featured_image | relative_url }}" alt="{{ work.title }}">
-            {% endif %}
-            <div class="work-card-content">
-                <h2 class="work-card-title">{{ work.title }}</h2>
-                <div class="work-card-meta">
-                    {% if work.client %}
-                    <span>{{ work.client }}</span>
-                    {% endif %}
-                    {% if work.date %}
-                    <span>{{ work.date | date: "%Y-%m" }}</span>
-                    {% endif %}
-                </div>
-                {% if work.excerpt %}
-                <div class="work-card-description">
-                    {{ work.excerpt | remove: '## ' | truncate: 100 }}
-                </div>
-                {% endif %}
+{% assign sorted_works = site.works | sort: "date" | reverse %}
+<section class="works-shell section section--tight" id="works">
+    <div class="container">
+        <div class="works-intro section__head">
+            <div class="works-heading">
+                <span class="kicker">Selected Work</span>
+                <h2>先看作品入口，再决定进哪一页。</h2>
             </div>
-        </a>
-        {% endfor %}
+            <p>首页只保留精选项目的图片、标题和最少量信息；更完整的背景、过程与方法都放进项目详情页。</p>
+        </div>
+
+        <div class="works-grid">
+            {% for work in sorted_works %}
+            <a href="{{ work.url | relative_url }}" class="works-card">
+                <div class="works-card__image">
+                    {% if work.featured_image %}
+                    <img src="{{ work.featured_image | relative_url }}" alt="{{ work.title }}">
+                    {% endif %}
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>{% if work.category_label %}{{ work.category_label }}{% elsif work.category %}{{ work.category }}{% else %}作品项目{% endif %}</span>
+                        {% if work.date %}<span>{{ work.date | date: "%Y" }}</span>{% endif %}
+                    </div>
+                    <h3>{{ work.title }}</h3>
+                    <div class="works-card__meta-line">
+                        {% if work.client %}
+                        {{ work.client }}
+                        {% elsif work.summary %}
+                        {{ work.summary | truncate: 40 }}
+                        {% else %}
+                        点击进入项目详情页
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="archive-link">
+            <h3>AIGC 方向的内容会继续单独整理</h3>
+            <p>相关方法、过程和工作流会优先放在独立项目页里，而不是回到首页抢结构。首页只负责把你带到正确的入口。</p>
+        </div>
     </div>
-</div>
+</section>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const filterButtons = document.querySelectorAll('.filter-button');
-    
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all buttons
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Here you would typically filter the works based on category
-            // For now, we'll just show all works
-        });
-    });
+    const params = new URLSearchParams(window.location.search);
+    const cameFromOpening = params.get('entered') === '1';
+    const navEntry = performance.getEntriesByType('navigation')[0];
+    const navType = navEntry ? navEntry.type : '';
+    let sameOriginReferrer = false;
+
+    try {
+        if (document.referrer) {
+            const referrerUrl = new URL(document.referrer);
+            sameOriginReferrer = referrerUrl.origin === window.location.origin;
+        }
+    } catch (error) {
+        sameOriginReferrer = false;
+    }
+
+    if (cameFromOpening) {
+        params.delete('entered');
+        const query = params.toString();
+        const nextUrl = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
+        window.history.replaceState({}, '', nextUrl);
+        return;
+    }
+
+    if (navType === 'reload' || !sameOriginReferrer) {
+        window.location.replace('{{ "/opening/" | relative_url }}');
+    }
 });
-</script> 
+</script>

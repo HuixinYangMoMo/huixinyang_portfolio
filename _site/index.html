@@ -3,373 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>作品集 - 杨慧鑫的作品集</title>
-    <style>
-        /* 导航栏样式 */
-        .nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .nav-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-        }
-
-        .nav-item a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .nav-item a:hover {
-            color: #007bff;
-        }
-
-        /* 页脚样式 */
-        .footer {
-            background: #f8f9fa;
-            padding: 2rem;
-            text-align: center;
-            margin-top: 4rem;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .nav-list {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-            }
-        }
-    </style>
+    <title>作品集 - 杨慧鑫</title>
+    <link rel="stylesheet" href="/assets/css/custom.css?v=1775664739">
     
 </head>
 <body>
     <nav class="nav">
-        <ul class="nav-list">
-            
-            <li class="nav-item">
-                <a href="/">首页</a>
-            </li>
-            
-            <li class="nav-item">
-                <a href="/about/">关于我</a>
-            </li>
-            
-        </ul>
+        <div class="container nav-shell">
+            <a class="brand-lockup" href="/">
+                <strong>杨慧鑫</strong>
+                <span>广告美术 | 品牌视觉 | AIGC 视觉方向持续实践</span>
+            </a>
+            <ul class="nav-list">
+                
+                <li class="nav-item">
+                    <a href="/">首页</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/about/">关于我</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="/works/aigc-lab-roadmap/">AIGC 方向</a>
+                </li>
+                
+            </ul>
+        </div>
     </nav>
 
     <main>
-        <style>
-.works-container {
-    max-width: 1200px;
-    margin: 120px auto 0;
-    padding: 0 20px;
-}
+        
+<section class="works-shell section section--tight" id="works">
+    <div class="container">
+        <div class="works-intro section__head">
+            <div class="works-heading">
+                <span class="kicker">Selected Work</span>
+                <h2>先看作品入口，再决定进哪一页。</h2>
+            </div>
+            <p>首页只保留精选项目的图片、标题和最少量信息；更完整的背景、过程与方法都放进项目详情页。</p>
+        </div>
 
-.works-header {
-    text-align: center;
-    margin-bottom: 60px;
-}
+        <div class="works-grid">
+            
+            <a href="/works/aigc-lab-roadmap/" class="works-card">
+                <div class="works-card__image">
+                    
+                    <img src="/images/generated/aigc-section-cover.png" alt="AIGC 视觉实验与工作流案例">
+                    
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>AIGC 方向</span>
+                        <span>2026</span>
+                    </div>
+                    <h3>AIGC 视觉实验与工作流案例</h3>
+                    <div class="works-card__meta-line">
+                        
+                        自驱项目
+                        
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/works/changdi-steam-oven/" class="works-card">
+                <div class="works-card__image">
+                    
+                    <img src="/images/works/changdi-steam-oven/featured.jpg" alt="长帝蒸汽风炉烤箱">
+                    
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>作品项目</span>
+                        <span>2024</span>
+                    </div>
+                    <h3>长帝蒸汽风炉烤箱</h3>
+                    <div class="works-card__meta-line">
+                        
+                        长帝
+                        
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/works/lezhi-cheese/" class="works-card">
+                <div class="works-card__image">
+                    
+                    <img src="/images/works/lezhi-cheese/featured.jpg" alt="乐芝牛奶酪">
+                    
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>作品项目</span>
+                        <span>2024</span>
+                    </div>
+                    <h3>乐芝牛奶酪</h3>
+                    <div class="works-card__meta-line">
+                        
+                        乐芝牛
+                        
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/works/wonderwall/" class="works-card">
+                <div class="works-card__image">
+                    
+                    <img src="/images/works/wonderwall/featured.jpg" alt="Wonderwall 品牌设计">
+                    
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>品牌项目</span>
+                        <span>2024</span>
+                    </div>
+                    <h3>Wonderwall 品牌设计</h3>
+                    <div class="works-card__meta-line">
+                        
+                        Wonderwall
+                        
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/works/wecreat-laser/" class="works-card">
+                <div class="works-card__image">
+                    
+                    <img src="/images/works/wecreat-laser/featured.jpg" alt="Wecreat激光雕刻机">
+                    
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>作品项目</span>
+                        <span>2024</span>
+                    </div>
+                    <h3>Wecreat激光雕刻机</h3>
+                    <div class="works-card__meta-line">
+                        
+                        Wecreat
+                        
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/works/kiri-latte/" class="works-card">
+                <div class="works-card__image">
+                    
+                    <img src="/images/works/kiri-latte/featured.jpg" alt="Kiri限定拿铁口味包装设计">
+                    
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>作品项目</span>
+                        <span>2024</span>
+                    </div>
+                    <h3>Kiri限定拿铁口味包装设计</h3>
+                    <div class="works-card__meta-line">
+                        
+                        Kiri
+                        
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/works/laiyifen-gift-box/" class="works-card">
+                <div class="works-card__image">
+                    
+                    <img src="/images/works/laiyifen-gift-box/featured.jpg" alt="来伊份新年礼盒">
+                    
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>作品项目</span>
+                        <span>2024</span>
+                    </div>
+                    <h3>来伊份新年礼盒</h3>
+                    <div class="works-card__meta-line">
+                        
+                        来伊份
+                        
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/works/laiyifen-new-year/" class="works-card">
+                <div class="works-card__image">
+                    
+                    <img src="/images/works/laiyifen-new-year/featured.jpg" alt="来伊份年货项目">
+                    
+                </div>
+                <div class="works-card__body">
+                    <div class="works-card__topline">
+                        <span>作品项目</span>
+                        <span>2024</span>
+                    </div>
+                    <h3>来伊份年货项目</h3>
+                    <div class="works-card__meta-line">
+                        
+                        来伊份
+                        
+                    </div>
+                </div>
+            </a>
+            
+        </div>
 
-.works-title {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-}
-
-.works-description {
-    color: #666;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.works-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-}
-
-.work-card {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
-}
-
-.work-card:hover {
-    transform: translateY(-5px);
-}
-
-.work-card img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-}
-
-.work-card-content {
-    padding: 20px;
-    background: white;
-}
-
-.work-card-title {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-}
-
-.work-card-meta {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.work-card-description {
-    margin-top: 1rem;
-    color: #444;
-    line-height: 1.6;
-}
-
-.category-filter {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 40px;
-}
-
-.filter-button {
-    padding: 8px 16px;
-    border: none;
-    background: #f8f9fa;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.filter-button:hover,
-.filter-button.active {
-    background: #007bff;
-    color: white;
-}
-</style>
-
-<div class="works-container">
-    <header class="works-header">
-        <h1 class="works-title">作品集</h1>
-        <p class="works-description">展示我的广告创意作品，包括品牌视觉设计、广告摄影等项目（持续更新中）。</p>
-    </header>
-
-    <div class="category-filter">
-        <button class="filter-button active">全部</button>
-        <button class="filter-button">广告摄影</button>
-        <button class="filter-button">视觉创意</button>
+        <div class="archive-link">
+            <h3>AIGC 方向的内容会继续单独整理</h3>
+            <p>相关方法、过程和工作流会优先放在独立项目页里，而不是回到首页抢结构。首页只负责把你带到正确的入口。</p>
+        </div>
     </div>
-
-    <div class="works-grid">
-        
-        <a href="/works/laiyifen-gift-box/" class="work-card">
-            
-            <img src="/images/works/laiyifen-gift-box/featured.jpg" alt="来伊份新年礼盒">
-            
-            <div class="work-card-content">
-                <h2 class="work-card-title">来伊份新年礼盒</h2>
-                <div class="work-card-meta">
-                    
-                    <span>来伊份</span>
-                    
-                    
-                    <span>2024-01</span>
-                    
-                </div>
-                
-                <div class="work-card-description">
-                    
-
-                </div>
-                
-            </div>
-        </a>
-        
-        <a href="/works/laiyifen-new-year/" class="work-card">
-            
-            <img src="/images/works/laiyifen-new-year/featured.jpg" alt="来伊份年货项目">
-            
-            <div class="work-card-content">
-                <h2 class="work-card-title">来伊份年货项目</h2>
-                <div class="work-card-meta">
-                    
-                    <span>来伊份</span>
-                    
-                    
-                    <span>2024-01</span>
-                    
-                </div>
-                
-                <div class="work-card-description">
-                    
-
-                </div>
-                
-            </div>
-        </a>
-        
-        <a href="/works/changdi-steam-oven/" class="work-card">
-            
-            <img src="/images/works/changdi-steam-oven/featured.jpg" alt="长帝蒸汽风炉烤箱">
-            
-            <div class="work-card-content">
-                <h2 class="work-card-title">长帝蒸汽风炉烤箱</h2>
-                <div class="work-card-meta">
-                    
-                    <span>长帝</span>
-                    
-                    
-                    <span>2024-01</span>
-                    
-                </div>
-                
-                <div class="work-card-description">
-                    
-
-                </div>
-                
-            </div>
-        </a>
-        
-        <a href="/works/kiri-latte/" class="work-card">
-            
-            <img src="/images/works/kiri-latte/featured.jpg" alt="Kiri限定拿铁口味包装设计">
-            
-            <div class="work-card-content">
-                <h2 class="work-card-title">Kiri限定拿铁口味包装设计</h2>
-                <div class="work-card-meta">
-                    
-                    <span>Kiri</span>
-                    
-                    
-                    <span>2024-01</span>
-                    
-                </div>
-                
-                <div class="work-card-description">
-                    
-
-                </div>
-                
-            </div>
-        </a>
-        
-        <a href="/works/lezhi-cheese/" class="work-card">
-            
-            <img src="/images/works/lezhi-cheese/featured.jpg" alt="乐芝牛奶酪">
-            
-            <div class="work-card-content">
-                <h2 class="work-card-title">乐芝牛奶酪</h2>
-                <div class="work-card-meta">
-                    
-                    <span>乐芝牛</span>
-                    
-                    
-                    <span>2024-01</span>
-                    
-                </div>
-                
-                <div class="work-card-description">
-                    
-
-                </div>
-                
-            </div>
-        </a>
-        
-        <a href="/works/wecreat-laser/" class="work-card">
-            
-            <img src="/images/works/wecreat-laser/featured.jpg" alt="Wecreat激光雕刻机">
-            
-            <div class="work-card-content">
-                <h2 class="work-card-title">Wecreat激光雕刻机</h2>
-                <div class="work-card-meta">
-                    
-                    <span>Wecreat</span>
-                    
-                    
-                    <span>2024-01</span>
-                    
-                </div>
-                
-                <div class="work-card-description">
-                    
-
-                </div>
-                
-            </div>
-        </a>
-        
-        <a href="/works/wonderwall/" class="work-card">
-            
-            <img src="/images/works/wonderwall/featured.jpg" alt="Wonderwall 品牌设计">
-            
-            <div class="work-card-content">
-                <h2 class="work-card-title">Wonderwall 品牌设计</h2>
-                <div class="work-card-meta">
-                    
-                    <span>Wonderwall</span>
-                    
-                    
-                    <span>2024-01</span>
-                    
-                </div>
-                
-                <div class="work-card-description">
-                    
-
-                </div>
-                
-            </div>
-        </a>
-        
-    </div>
-</div>
+</section>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const filterButtons = document.querySelectorAll('.filter-button');
-    
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all buttons
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Here you would typically filter the works based on category
-            // For now, we'll just show all works
-        });
-    });
+    const params = new URLSearchParams(window.location.search);
+    const cameFromOpening = params.get('entered') === '1';
+    const navEntry = performance.getEntriesByType('navigation')[0];
+    const navType = navEntry ? navEntry.type : '';
+    let sameOriginReferrer = false;
+
+    try {
+        if (document.referrer) {
+            const referrerUrl = new URL(document.referrer);
+            sameOriginReferrer = referrerUrl.origin === window.location.origin;
+        }
+    } catch (error) {
+        sameOriginReferrer = false;
+    }
+
+    if (cameFromOpening) {
+        params.delete('entered');
+        const query = params.toString();
+        const nextUrl = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
+        window.history.replaceState({}, '', nextUrl);
+        return;
+    }
+
+    if (navType === 'reload' || !sameOriginReferrer) {
+        window.location.replace('/opening/');
+    }
 });
-</script> 
+</script>
     </main>
 
     <footer class="footer">
-        <div class="container">
-            <p>© 2025 杨慧鑫的作品集. All rights reserved.</p>
-            <p>联系方式：mojimo.cc@gmail.com | （+86） 15800440416</p>
+        <div class="container footer-shell">
+            <div>
+                <strong>杨慧鑫</strong>
+                <div>广告美术 | 品牌视觉 | AIGC 视觉方向持续实践</div>
+            </div>
+            <div>
+                <div>mojimo.cc@gmail.com</div>
+                <div>（+86）15800440416</div>
+            </div>
         </div>
     </footer>
 </body>
