@@ -51,11 +51,30 @@ async function loadFrameSet(baseUrl) {
   if (!response.ok) throw new Error(`Failed to load manifest: ${baseUrl}`);
   const manifest = await response.json();
   const frames = [];
-  for (const frameName of manifest.frames) {
-    const img = await loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`);
-    frames.push(img);
+  
+  if (manifest.frames.length > 0) {
+    // 仅加载第一帧就立即返回，不阻塞开屏渲染
+    const firstFrame = await loadImage(`${baseUrl}/${manifest.frames[0]}${ASSET_VERSION}`);
+    frames.push(firstFrame);
   }
-  return { frames, fps: manifest.fps || 8, naturalWidth: frames[0].naturalWidth, naturalHeight: frames[0].naturalHeight };
+  
+  const animData = { 
+    frames, 
+    fps: manifest.fps || 8, 
+    naturalWidth: frames[0]?.naturalWidth || 960, 
+    naturalHeight: frames[0]?.naturalHeight || 960 
+  };
+  
+  // 在后台并行加载剩余的帧序列
+  if (manifest.frames.length > 1) {
+    Promise.all(
+      manifest.frames.slice(1).map(frameName => loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`))
+    ).then(restFrames => {
+      animData.frames.push(...restFrames);
+    }).catch(console.error);
+  }
+  
+  return animData;
 }
 
 // Compute alpha map for collision detection
@@ -263,6 +282,7 @@ async function initOpeningCanvas() {
     
     ctx.font = FONT;
     ctx.textBaseline = "alphabetic";
+    const charAdvance = ctx.measureText("a").width; // 预先计算等宽字体的字符宽度，极大地提升渲染性能
     
     for (let baselineY = TOP_MARGIN; baselineY <= LOGICAL_HEIGHT - BOTTOM_MARGIN; baselineY += LINE_HEIGHT) {
       // Create organic fluid container borders
@@ -302,9 +322,11 @@ async function initOpeningCanvas() {
         let charX = x;
         for (let i=0; i<line.text.length; i++) {
            const char = line.text[i];
-           const waveY = Math.sin(charX * 0.02 + time * 3) * 1.5;
-           ctx.fillText(char === " " ? "\u00A0" : char, charX, baselineY + waveY);
-           charX += ctx.measureText(char).width;
+           if (char !== " ") {
+               const waveY = Math.sin(charX * 0.02 + time * 3) * 1.5;
+               ctx.fillText(char, charX, baselineY + waveY);
+           }
+           charX += charAdvance;
         }
 
         cursor = line.end;
