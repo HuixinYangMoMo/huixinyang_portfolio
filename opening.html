@@ -104,4 +104,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 window.__OPENING_ASSET_VERSION__ = "{{ site.time | date: '%s' }}";
 </script>
-<script type="module" src="{{ '/assets/js/opening-canvas.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
+<script type="module">
+import { prepareWithSegments, layoutNextLine } from "https://esm.sh/@chenglou/pretext@0.0.5";
+window.prepareWithSegments = prepareWithSegments;
+window.layoutNextLine = layoutNextLine;
+</script>
+<script src="{{ '/assets/js/opening-canvas.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
