@@ -52,11 +52,13 @@ async function loadFrameSet(baseUrl) {
   const manifest = await response.json();
   const frames = [];
   
-  if (manifest.frames.length > 0) {
-    // 仅加载第一帧就立即返回，不阻塞开屏渲染
-    const firstFrame = await loadImage(`${baseUrl}/${manifest.frames[0]}${ASSET_VERSION}`);
-    frames.push(firstFrame);
-  }
+  // To avoid stuttering in animation, wait for all frames to load
+  const loadPromises = manifest.frames.map(frameName => 
+    loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`)
+  );
+  
+  const loadedFrames = await Promise.all(loadPromises);
+  frames.push(...loadedFrames);
   
   const animData = { 
     frames, 
@@ -65,26 +67,23 @@ async function loadFrameSet(baseUrl) {
     naturalHeight: frames[0]?.naturalHeight || 960 
   };
   
-  // 在后台并行加载剩余的帧序列
-  if (manifest.frames.length > 1) {
-    Promise.all(
-      manifest.frames.slice(1).map(frameName => loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`))
-    ).then(restFrames => {
-      animData.frames.push(...restFrames);
-    }).catch(console.error);
-  }
-  
   return animData;
 }
 
 // Compute alpha map for collision detection
 function computeAlphaRows(image) {
+  if (!image) return { width: 960, height: 960, rows: new Array(960).fill({left: -1, right: -1}) };
   const canvas = document.createElement("canvas");
-  canvas.width = image.naturalWidth;
-  canvas.height = image.naturalHeight;
+  const w = image.naturalWidth || 960;
+  const h = image.naturalHeight || 960;
+  canvas.width = w;
+  canvas.height = h;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   ctx.drawImage(image, 0, 0);
-  const { data, width, height } = ctx.getImageData(0, 0, width, height);
+  const imgData = ctx.getImageData(0, 0, w, h);
+  const data = imgData.data;
+  const width = imgData.width;
+  const height = imgData.height;
   const rows = new Array(height).fill(null);
 
   for (let y = 0; y < height; y += 1) {
@@ -132,7 +131,7 @@ class Jellyfish {
     this.timeOffset = Math.random() * 100;
     
     // Pre-calculate collision map using the first frame
-    this.alphaMap = computeAlphaRows(this.frames[0]);
+    this.alphaMap = computeAlphaRows(this.frames && this.frames.length > 0 ? this.frames[0] : null);
     this.opacity = config.opacity || 1.0;
     
     // Current state for collision
@@ -167,6 +166,7 @@ class Jellyfish {
   }
   
   draw(ctx, time) {
+    if (!this.frames || this.frames.length === 0) return;
     const t = time + this.timeOffset;
     const frameIdx = Math.floor((t * this.fps)) % this.frames.length;
     const frame = this.frames[frameIdx];
@@ -211,9 +211,8 @@ function subtractRanges(baseStart, baseEnd, blockedRanges) {
   return slots;
 }
 
-const prepareWithSegments = window.prepareWithSegments;
-const layoutNextLine = window.layoutNextLine;
-
+// Remove pretext dependency to guarantee maximum stability and cross-browser compatibility.
+// We implement a robust custom line wrapper below.
 async function initOpeningCanvas() {
   const canvas = document.querySelector("[data-opening-canvas]");
   if (!canvas) return;
@@ -262,9 +261,31 @@ async function initOpeningCanvas() {
     })
   ];
   
-  // Use pretext to layout typography
-  const prepared = prepareWithSegments(TEXT_STREAM, FONT);
+  // Paragraph Layout logic without pretext
+  // 按照生物科普说明书的科技感进行重新设计排版
   
+  // Biological text paragraphs
+  const paragraphs = [
+    "CYAN_GLIDE_01: SPECIMEN ANALYSIS",
+    "Bioluminescent species found in deep trench zones. Exhibits pronounced glowing behavior when disturbed.",
+    "The bell diameter ranges from 40-60cm, characterized by transparent blueish hues.",
+    "",
+    "PINK_PULSE_02: FLUID DYNAMICS",
+    "Observation of propulsion mechanisms reveals a highly efficient jet-like cycle. Energy expenditure is minimal.",
+    "Trailing tentacles span up to 3 meters, lined with microscopic stinging cells for capturing zooplankton.",
+    "",
+    "VIOLET_SWAY_03: NEURAL NETWORKS",
+    "Unlike centralized nervous systems, this organism utilizes a distributed nerve net.",
+    "Sensory organs located at the bell margin detect light, gravity, and chemical signatures.",
+    "",
+    "SYSTEM_OVERRIDE_ACTIVE...",
+    "INITIATING DATA STREAM ANALYSIS...",
+    "Subject demonstrates anomalous regenerative capabilities. Cellular structure remains stable under extreme pressure.",
+    "Recommended for further extraction and synthesis.",
+    "...",
+    "END OF TRANSMISSION."
+  ];
+
   let lastTime = performance.now() / 1000;
   
   const renderFrame = (now) => {
@@ -273,23 +294,42 @@ async function initOpeningCanvas() {
     
     ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
+    // Draw grid background (tech manual vibe)
+    ctx.strokeStyle = "rgba(100, 150, 255, 0.05)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x <= LOGICAL_WIDTH; x += 100) {
+        ctx.moveTo(x, 0); ctx.lineTo(x, LOGICAL_HEIGHT);
+    }
+    for (let y = 0; y <= LOGICAL_HEIGHT; y += 100) {
+        ctx.moveTo(0, y); ctx.lineTo(LOGICAL_WIDTH, y);
+    }
+    ctx.stroke();
+
+    // Corner tech UI elements
+    ctx.strokeStyle = "rgba(180, 210, 255, 0.4)";
+    ctx.beginPath();
+    ctx.moveTo(30, 50); ctx.lineTo(30, 30); ctx.lineTo(50, 30);
+    ctx.moveTo(LOGICAL_WIDTH-50, 30); ctx.lineTo(LOGICAL_WIDTH-30, 30); ctx.lineTo(LOGICAL_WIDTH-30, 50);
+    ctx.moveTo(30, LOGICAL_HEIGHT-50); ctx.lineTo(30, LOGICAL_HEIGHT-30); ctx.lineTo(50, LOGICAL_HEIGHT-30);
+    ctx.stroke();
+
+    // Update jellies
     for (const j of jellies) {
       j.update(time);
     }
     
-    // Compute Text Layout avoiding jellies
-    let cursor = { ...START_CURSOR };
-    
+    // Typography layout avoiding jellies
     ctx.font = FONT;
     ctx.textBaseline = "alphabetic";
-    const charAdvance = ctx.measureText("a").width; // 预先计算等宽字体的字符宽度，极大地提升渲染性能
+    
+    let currentPara = 0;
+    let wordIndex = 0;
+    let words = paragraphs[currentPara].split(' ');
     
     for (let baselineY = TOP_MARGIN; baselineY <= LOGICAL_HEIGHT - BOTTOM_MARGIN; baselineY += LINE_HEIGHT) {
-      // Create organic fluid container borders
-      const leftWave = Math.sin(baselineY * 0.024 - time) * 18;
-      const rightWave = Math.cos(baselineY * 0.02 + time) * 14;
-      const baseStart = LEFT_MARGIN + leftWave;
-      const baseEnd = LOGICAL_WIDTH - RIGHT_MARGIN + rightWave;
+      const baseStart = LEFT_MARGIN + 20; // Indent slightly
+      const baseEnd = LOGICAL_WIDTH - RIGHT_MARGIN - 20;
 
       // Get collision masks from jellies
       const blockedRanges = jellies.map(j => j.getMaskRange(baselineY - LINE_HEIGHT * 0.4)).filter(Boolean);
@@ -299,41 +339,56 @@ async function initOpeningCanvas() {
 
       for (let slotIndex = 0; slotIndex < slots.length; slotIndex += 1) {
         const slot = slots[slotIndex];
-        let line = layoutNextLine(prepared, cursor, slot.end - slot.start);
-
-        if (line === null) {
-          cursor = { ...START_CURSOR }; // Loop text
-          line = layoutNextLine(prepared, cursor, slot.end - slot.start);
-        }
-
-        if (line === null) continue;
-
-        // Draw line
-        const x = slot.start + Math.sin(baselineY * 0.043 + time * 2 + slotIndex) * 2;
+        let cursorX = slot.start;
         
-        // Tone
-        let alpha = 0.74;
-        if (baselineY < 150 || baselineY > 650) alpha = slotIndex % 2 === 0 ? 0.42 : 0.2;
-        else alpha = slotIndex % 2 === 0 ? 0.92 : 0.42;
+        // Tone styling
+        let alpha = 0.8;
+        if (paragraphs[currentPara] === "") alpha = 0; // Empty line
+        else if (paragraphs[currentPara].includes(":")) {
+             alpha = 0.95; // Heading
+             ctx.font = `700 ${FONT_SIZE+1}px ${FONT_FAMILY}`;
+        } else {
+             alpha = 0.6; // Body
+             ctx.font = FONT;
+        }
 
         ctx.fillStyle = `rgba(180, 210, 255, ${alpha})`;
         
-        // Draw characters with subtle individual wave
-        let charX = x;
-        for (let i=0; i<line.text.length; i++) {
-           const char = line.text[i];
-           if (char !== " ") {
-               const waveY = Math.sin(charX * 0.02 + time * 3) * 1.5;
-               ctx.fillText(char, charX, baselineY + waveY);
-           }
-           charX += charAdvance;
-        }
+        // Fill words in this slot
+        while (currentPara < paragraphs.length) {
+            if (paragraphs[currentPara] === "") {
+                currentPara++;
+                if(currentPara < paragraphs.length) words = paragraphs[currentPara].split(' ');
+                break; // move to next line
+            }
 
-        cursor = line.end;
+            if (wordIndex >= words.length) {
+                currentPara++;
+                if(currentPara >= paragraphs.length) {
+                    currentPara = 0; // Loop text
+                }
+                words = paragraphs[currentPara].split(' ');
+                break; // New line per paragraph
+            }
+
+            const word = words[wordIndex];
+            const wordWidth = ctx.measureText(word + " ").width;
+
+            if (cursorX + wordWidth <= slot.end) {
+                // Gentle floating wave on text
+                const waveY = Math.sin(cursorX * 0.01 + time * 2) * 1.5;
+                ctx.fillText(word, cursorX, baselineY + waveY);
+                cursorX += wordWidth;
+                wordIndex++;
+            } else {
+                // Word doesn't fit in this slot
+                break;
+            }
+        }
       }
     }
     
-    // Draw Jellies on top (with screen blend mode)
+    // Draw Jellies on top
     for (const j of jellies) {
       j.draw(ctx, time);
     }
