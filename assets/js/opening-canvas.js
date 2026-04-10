@@ -1,4 +1,4 @@
-import { prepareWithSegments, layoutWithLines } from "https://esm.sh/@chenglou/pretext@0.0.5";
+import { prepareWithSegments, layoutWithLines } from "@chenglou/pretext";
 
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;

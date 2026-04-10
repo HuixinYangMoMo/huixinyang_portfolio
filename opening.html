@@ -104,4 +104,11 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 window.__OPENING_ASSET_VERSION__ = "{{ site.time | date: '%s' }}";
 </script>
+<script type="importmap">
+  {
+    "imports": {
+      "@chenglou/pretext": "{{ '/assets/vendor/pretext/layout.js' | relative_url }}"
+    }
+  }
+</script>
 <script type="module" src="{{ '/assets/js/opening-canvas.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>
