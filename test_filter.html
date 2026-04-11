@@ -1,0 +1,12 @@
+<!DOCTYPE html><html><body>
+<canvas id="c" width="960" height="960"></canvas>
+<script>
+  const img = new Image();
+  img.src = '/assets/images/jelly/j1.jpeg'; // Just testing the idea
+  img.onload = () => {
+    const ctx = document.getElementById('c').getContext('2d');
+    ctx.filter = 'sepia(1) hue-rotate(90deg) saturate(3) brightness(1.5)';
+    ctx.drawImage(img, 0, 0);
+  };
+</script>
+</body></html>

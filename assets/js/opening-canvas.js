@@ -2,9 +2,10 @@ import { prepareWithSegments, layoutNextLine } from "@chenglou/pretext";
 
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;
-const LINE_HEIGHT = 16;
-const FONT = '10.5px "SF Mono", Menlo, Consolas, monospace';
-const MIN_SLOT_WIDTH = 50; 
+const LINE_HEIGHT = 14;
+const FONT = '10px "SF Mono", Menlo, Consolas, monospace';
+const MIN_SLOT_WIDTH = 40; 
+const MASK_SCALE = 0.25; 
 
 const ASSET_VERSION =
   typeof window !== "undefined" && window.__OPENING_ASSET_VERSION__
@@ -18,17 +19,16 @@ const FRAME_SETS = {
 };
 
 // --------------------------------------------------------
-// 1. Data & Text Configuration
+// 1. Text Data
 // --------------------------------------------------------
 const TEXT_1 = `[ ENCRYPTED_STREAM_01: BIO_SYSTEMS ]\nOrganism exhibits pronounced glowing behavior when disturbed. The bell diameter ranges from 40-60cm, characterized by transparent hues. Observation of propulsion mechanisms reveals a highly efficient jet-like cycle. Energy expenditure is minimal. Trailing tentacles span up to 3 meters, lined with microscopic stinging cells for capturing zooplankton.\n[ FLUID DYNAMICS ]\nBy expanding and contracting its coronal bell, the entity creates localized vortex rings. This method of locomotion minimizes drag and allows for sustained suspension in high-pressure abyssal zones.\n\n`.repeat(50);
-
 const TEXT_2 = `[ SYS_OVERRIDE_ACTIVE ]\nINITIATING DATA STREAM ANALYSIS...\nSubject demonstrates anomalous regenerative capabilities. Cellular structure remains stable under extreme pressure. Recommended for further extraction and synthesis.\n[ NEURAL MAPPING ]\nUnlike centralized nervous systems, this organism utilizes a distributed nerve net. Instantaneous reflexive responses to hydrodynamic shifts are achieved via sub-millisecond signal propagation. Sensory organs located at the bell margin detect light, gravity, and chemical signatures.\n\n`.repeat(50);
 
 const PREP_1 = prepareWithSegments(TEXT_1, FONT, { whiteSpace: 'pre-wrap' });
 const PREP_2 = prepareWithSegments(TEXT_2, FONT, { whiteSpace: 'pre-wrap' });
 
 // --------------------------------------------------------
-// 2. Asset Loader & Matrix/Sonar Filter
+// 2. High-Performance Image Filter & Loader
 // --------------------------------------------------------
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -40,7 +40,7 @@ function loadImage(src) {
   });
 }
 
-function convertToSonarHologram(img) {
+function convertToThermalHologram(img) {
   const canvas = document.createElement("canvas");
   const w = img.width || img.naturalWidth || 960;
   const h = img.height || img.naturalHeight || 960;
@@ -51,70 +51,35 @@ function convertToSonarHologram(img) {
   const imgData = ctx.getImageData(0, 0, w, h);
   const data = imgData.data;
   
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i+1];
-    const b = data[i+2];
-    const a = data[i+3];
-    
-    if (a < 10) { data[i+3] = 0; continue; }
-    
-    const luma = (r + g + b) / 3;
-    
-    // Core Heatmap & Holographic Dither/Point Cloud Effect
-    // Higher luma = more dense points. Lower luma = mostly scattered points.
-    if (Math.random() > luma / 100) {
-      data[i+3] = 0; // discard pixel to create mesh/point cloud feel
-      continue;
-    }
-    
-    if (luma > 200) { // White/Yellow hotspots (Energy core)
-      data[i] = 255; 
-      data[i+1] = 255; 
-      data[i+2] = 50; 
-      data[i+3] = 255; 
-    } else if (luma > 100) { // Toxic Neon Green (Tentacles/Body)
-      data[i] = 57; 
-      data[i+1] = 255; 
-      data[i+2] = 20;
+  for (let i = 0, y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++, i += 4) {
+      const a = data[i+3];
+      if (a < 15) { data[i+3] = 0; continue; }
+      
+      const r = data[i], g = data[i+1], b = data[i+2];
+      const luma = (r + g + b) / 3;
+      
+      // Deterministic spatial noise for point cloud effect (No Math.random = fast!)
+      const noise = ((x * 1973 + y * 9277) % 100);
+      
+      if (noise > luma * 0.9) {
+        data[i+3] = 0; 
+        continue; 
+      }
+      
+      // Thermal Palette
+      if (luma > 180) { 
+        data[i] = 255; data[i+1] = 255; data[i+2] = 50; 
+      } else if (luma > 100) { 
+        data[i] = 57; data[i+1] = 255; data[i+2] = 20;
+      } else { 
+        data[i] = 0; data[i+1] = 180; data[i+2] = 255; 
+      }
       data[i+3] = Math.min(255, luma * 1.5);
-    } else if (luma > 30) { // Deep Cyan/Blue (Veils/Edges)
-      data[i] = 0; 
-      data[i+1] = 200; 
-      data[i+2] = 255; 
-      data[i+3] = Math.min(255, luma * 2.0);
-    } else {
-      data[i+3] = 0; 
     }
   }
   ctx.putImageData(imgData, 0, 0);
   return canvas;
-}
-
-// --------------------------------------------------------
-// 3. Collision Logic (Per Frame)
-// --------------------------------------------------------
-function computeAlphaRows(canvas) {
-  const w = canvas.width;
-  const h = canvas.height;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  const data = ctx.getImageData(0, 0, w, h).data;
-  const rows = new Array(h).fill(null);
-
-  for (let y = 0; y < h; y += 1) {
-    let left = -1;
-    let right = -1;
-    for (let x = 0; x < w; x += 1) {
-      if (data[(y * w + x) * 4 + 3] > 10) { left = x; break; }
-    }
-    if (left !== -1) {
-      for (let x = w - 1; x >= 0; x -= 1) {
-        if (data[(y * w + x) * 4 + 3] > 10) { right = x; break; }
-      }
-    }
-    rows[y] = { left, right };
-  }
-  return { width: w, height: h, rows };
 }
 
 async function loadFrameSet(baseUrl) {
@@ -123,13 +88,10 @@ async function loadFrameSet(baseUrl) {
   const manifest = await response.json();
   const processedFrames = [];
   
+  // Background load
   const loadPromises = manifest.frames.map(frameName => 
     loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`).then(img => {
-      const hologram = convertToSonarHologram(img);
-      return {
-        canvas: hologram,
-        alphaMap: computeAlphaRows(hologram)
-      };
+      return { canvas: convertToThermalHologram(img) };
     })
   );
   
@@ -142,6 +104,38 @@ async function loadFrameSet(baseUrl) {
     naturalWidth: processedFrames[0]?.canvas.width || 960, 
     naturalHeight: processedFrames[0]?.canvas.height || 960 
   };
+}
+
+// --------------------------------------------------------
+// 3. Collision Logic (Scaled Offscreen Canvas)
+// --------------------------------------------------------
+function getBlockedRangesForY(maskData, mw, mh, y, logicalWidth, padding) {
+    const my = Math.floor(y * MASK_SCALE);
+    if (my < 0 || my >= mh) return [];
+    
+    const ranges = [];
+    let inBlock = false;
+    let startX = 0;
+    
+    const offset = my * mw * 4;
+    for (let mx = 0; mx < mw; mx++) {
+        const alpha = maskData[offset + mx * 4 + 3];
+        if (alpha > 15) {
+            if (!inBlock) {
+                inBlock = true;
+                startX = mx;
+            }
+        } else {
+            if (inBlock) {
+                inBlock = false;
+                ranges.push({ start: (startX / MASK_SCALE) - padding, end: (mx / MASK_SCALE) + padding });
+            }
+        }
+    }
+    if (inBlock) {
+        ranges.push({ start: (startX / MASK_SCALE) - padding, end: logicalWidth + padding });
+    }
+    return ranges;
 }
 
 function subtractRanges(baseStart, baseEnd, blockedRanges) {
@@ -190,7 +184,6 @@ class AnimatedJelly {
     this.y = 0;
     this.vx = 0;
     this.vy = 0;
-    
     this.timeOffset = Math.random() * 100;
   }
   
@@ -210,26 +203,21 @@ class AnimatedJelly {
     const frameIdx = Math.floor((t * this.fps)) % this.frames.length;
     return this.frames[frameIdx];
   }
-  
-  getMaskRange(time, yPos) {
-    if (this.blur > 0) return null; // Blurred background jellies do not collide with text
-    
+
+  drawMask(ctx, time) {
+    if (this.blur > 0) return; // Blurred background jellies do not collide with text
     const frame = this.getCurrentFrame(time);
-    if (!frame) return null;
+    if (!frame) return;
     
-    const localY = yPos - this.y + this.height/2; 
-    if (localY < 0 || localY >= this.height) return null;
+    ctx.save();
+    ctx.translate(this.x * MASK_SCALE, this.y * MASK_SCALE);
+    const angle = Math.atan2(this.vy, this.vx);
+    ctx.rotate(angle + Math.PI / 2);
+    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05); // Breath/sway
     
-    const imageY = Math.max(0, Math.min(frame.alphaMap.height - 1, Math.floor((localY / this.height) * frame.alphaMap.height)));
-    const row = frame.alphaMap.rows[imageY];
-    
-    if (!row || row.left === -1) return null;
-    
-    const padding = 16; // Hug tightly
-    return {
-      start: this.x - this.width/2 + (row.left / frame.alphaMap.width) * this.width - padding,
-      end: this.x - this.width/2 + (row.right / frame.alphaMap.width) * this.width + padding
-    };
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(frame.canvas, (-this.width/2) * MASK_SCALE, (-this.height/2) * MASK_SCALE, this.width * MASK_SCALE, this.height * MASK_SCALE);
+    ctx.restore();
   }
 
   draw(ctx, time) {
@@ -238,10 +226,9 @@ class AnimatedJelly {
     
     ctx.save();
     ctx.translate(this.x, this.y);
-    
     const angle = Math.atan2(this.vy, this.vx);
     ctx.rotate(angle + Math.PI / 2); 
-    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05); // Breath/sway
+    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05);
     
     ctx.globalAlpha = this.opacity;
     ctx.globalCompositeOperation = "screen";
@@ -293,7 +280,7 @@ class DeepSeaStars {
   }
 }
 
-// Static Edge UI Overlays (Flickering, Not Floating)
+// Static Edge UI Overlays (Flickering, Fixed on Top)
 class StaticTerminalUI {
   draw(ctx, time) {
     ctx.save();
@@ -366,6 +353,25 @@ class StaticTerminalUI {
   }
 }
 
+function drawBackgroundNumbers(ctx, time) {
+  ctx.save();
+  ctx.globalAlpha = 0.04;
+  ctx.font = '280px monospace';
+  ctx.fillStyle = "#39ff14";
+  ctx.fillText("302", LOGICAL_WIDTH - 500, 300);
+  ctx.fillText("SYS", 100, LOGICAL_HEIGHT - 150);
+  
+  ctx.globalAlpha = 0.4;
+  ctx.font = '14px monospace';
+  for(let i=0; i<6; i++) {
+    const x = (LOGICAL_WIDTH * 0.2 * i + time * 30) % LOGICAL_WIDTH;
+    const y = LOGICAL_HEIGHT * 0.85 + Math.sin(time + i) * 60;
+    const val = (Math.sin(time*2 + i) * 1000000).toFixed(0);
+    ctx.fillText(`COORD [X:${val}]`, x, y);
+  }
+  ctx.restore();
+}
+
 // --------------------------------------------------------
 // 5. Main Initialization
 // --------------------------------------------------------
@@ -389,12 +395,19 @@ async function initOpeningCanvas() {
   window.addEventListener("resize", resize);
   resize();
 
-  // Load animated frames and process them into point clouds per frame!
   const [cyanAnim, pinkAnim, violetAnim] = await Promise.all([
     loadFrameSet(FRAME_SETS.cyan),
     loadFrameSet(FRAME_SETS.pink),
     loadFrameSet(FRAME_SETS.violet)
   ]);
+  
+  // Offscreen Canvas for pixel-perfect rotation-aware collision!
+  const MW = LOGICAL_WIDTH * MASK_SCALE;
+  const MH = LOGICAL_HEIGHT * MASK_SCALE;
+  const maskCanvas = document.createElement("canvas");
+  maskCanvas.width = MW;
+  maskCanvas.height = MH;
+  const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
   
   const jellies = [
     // Sharp Foreground Jellies (Collide with text)
@@ -415,17 +428,27 @@ async function initOpeningCanvas() {
     const dt = time - lastTime;
     lastTime = time;
     
-    // Clear & Base dark navy/black background
+    // Clear & Base
     ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-    ctx.fillStyle = "#02080a";
+    ctx.fillStyle = "#02080a"; // Very dark cyan/navy
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
+    drawBackgroundNumbers(ctx, time);
     starfield.update(dt, time);
     starfield.draw(ctx, time);
 
     for (const j of jellies) j.update(time);
     
-    // TEXT WRAPPING
+    // =======================================
+    // SCALED OFFSCREEN MASK FOR COLLISION
+    // =======================================
+    maskCtx.clearRect(0, 0, MW, MH);
+    for (const j of jellies) j.drawMask(maskCtx, time);
+    const maskData = maskCtx.getImageData(0, 0, MW, MH).data;
+    
+    // =======================================
+    // TEXT WRAPPING & LAYOUT
+    // =======================================
     ctx.font = FONT;
     ctx.textBaseline = "alphabetic";
     
@@ -449,14 +472,10 @@ async function initOpeningCanvas() {
     ctx.shadowColor = "#00f3ff";
     ctx.shadowBlur = 2;
     
-    // Collect mask ranges dynamically for the current frame
     for (let baselineY = -40 - yOffset; baselineY <= LOGICAL_HEIGHT + 60; baselineY += LINE_HEIGHT) {
       
-      const blocked = [];
-      for (const j of jellies) {
-        const range = j.getMaskRange(time, baselineY - LINE_HEIGHT * 0.4);
-        if (range) blocked.push(range);
-      }
+      // Calculate blocked regions for this row using the scaled mask
+      const blocked = getBlockedRangesForY(maskData, MW, MH, baselineY - LINE_HEIGHT * 0.5, LOGICAL_WIDTH, 14); 
       
       // Column 1 (Left Area)
       const slots1 = subtractRanges(80, LOGICAL_WIDTH / 2 - 40, blocked);
@@ -489,7 +508,6 @@ async function initOpeningCanvas() {
     ctx.shadowBlur = 0; // Reset
     
     // Foreground Layer - Jellies
-    // Sort jellies by blur to draw sharpest on top
     const sortedJellies = [...jellies].sort((a, b) => b.blur - a.blur);
     for (const j of sortedJellies) {
       j.draw(ctx, time);
