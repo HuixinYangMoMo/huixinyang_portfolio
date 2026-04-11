@@ -1,10 +1,21 @@
-import { prepareWithSegments, layoutNextLine } from "@chenglou/pretext";
+import { prepareWithSegments, layoutNextLine } from "{{ '/assets/libs/layout.js' | relative_url }}";
 
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;
-const LINE_HEIGHT = 14;
-const FONT = '10px "SF Mono", Menlo, Consolas, monospace';
-const MIN_SLOT_WIDTH = 40; 
+const LINE_HEIGHT = 16;
+const FONT = '10.5px "SF Mono", Menlo, Consolas, monospace';
+const MIN_SLOT_WIDTH = 50; 
+
+const ASSET_VERSION =
+  typeof window !== "undefined" && window.__OPENING_ASSET_VERSION__
+    ? `?v=${window.__OPENING_ASSET_VERSION__}`
+    : "";
+
+const FRAME_SETS = {
+  cyan: `/images/opening/wavespeed/anim/cyan_glide`,
+  pink: `/images/opening/wavespeed/anim/pink_pulse`,
+  violet: `/images/opening/wavespeed/anim/violet_sway`,
+};
 
 // --------------------------------------------------------
 // 1. Data & Text Configuration
@@ -22,6 +33,7 @@ const PREP_2 = prepareWithSegments(TEXT_2, FONT, { whiteSpace: 'pre-wrap' });
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+    img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = reject;
     img.src = src;
@@ -30,8 +42,8 @@ function loadImage(src) {
 
 function convertToSonarHologram(img) {
   const canvas = document.createElement("canvas");
-  const w = img.naturalWidth;
-  const h = img.naturalHeight;
+  const w = img.width || img.naturalWidth || 960;
+  const h = img.height || img.naturalHeight || 960;
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -43,26 +55,36 @@ function convertToSonarHologram(img) {
     const r = data[i];
     const g = data[i+1];
     const b = data[i+2];
+    const a = data[i+3];
+    
+    if (a < 10) { data[i+3] = 0; continue; }
+    
     const luma = (r + g + b) / 3;
     
-    // Map to intense radar green / cyan based on luma
-    if (luma > 20) {
-      if (luma > 180) { // White/Yellow hotspots
-        data[i] = 255; 
-        data[i+1] = 255; 
-        data[i+2] = 50; 
-      } else if (luma > 90) { // Toxic Neon Green
-        data[i] = 57; 
-        data[i+1] = 255; 
-        data[i+2] = 20;
-      } else { // Deep Cyan/Blue
-        data[i] = 0; 
-        data[i+1] = 180; 
-        data[i+2] = 255; 
-      }
-      data[i+3] = Math.min(255, luma * 1.8); 
+    // Core Heatmap & Holographic Dither/Point Cloud Effect
+    // Higher luma = more dense points. Lower luma = mostly scattered points.
+    if (Math.random() > luma / 100) {
+      data[i+3] = 0; // discard pixel to create mesh/point cloud feel
+      continue;
+    }
+    
+    if (luma > 200) { // White/Yellow hotspots (Energy core)
+      data[i] = 255; 
+      data[i+1] = 255; 
+      data[i+2] = 50; 
+      data[i+3] = 255; 
+    } else if (luma > 100) { // Toxic Neon Green (Tentacles/Body)
+      data[i] = 57; 
+      data[i+1] = 255; 
+      data[i+2] = 20;
+      data[i+3] = Math.min(255, luma * 1.5);
+    } else if (luma > 30) { // Deep Cyan/Blue (Veils/Edges)
+      data[i] = 0; 
+      data[i+1] = 200; 
+      data[i+2] = 255; 
+      data[i+3] = Math.min(255, luma * 2.0);
     } else {
-      data[i+3] = 0; // Transparent background
+      data[i+3] = 0; 
     }
   }
   ctx.putImageData(imgData, 0, 0);
@@ -70,43 +92,56 @@ function convertToSonarHologram(img) {
 }
 
 // --------------------------------------------------------
-// 3. Collision Logic
+// 3. Collision Logic (Per Frame)
 // --------------------------------------------------------
-function getBlockedRangesForY(maskData, y, width, padding) {
-    const ranges = [];
-    let inBlock = false;
-    let start = 0;
-    
-    const y1 = Math.max(0, Math.floor(y - LINE_HEIGHT * 0.8));
-    const y2 = Math.max(0, Math.floor(y - LINE_HEIGHT * 0.4));
-    const y3 = Math.max(0, Math.floor(y));
-    
-    const o1 = y1 * width * 4;
-    const o2 = y2 * width * 4;
-    const o3 = y3 * width * 4;
-    
-    for (let x = 0; x < width; x++) {
-        // Alpha channel
-        const a1 = maskData[o1 + x * 4 + 3];
-        const a2 = maskData[o2 + x * 4 + 3];
-        const a3 = maskData[o3 + x * 4 + 3];
-        
-        if (a1 > 15 || a2 > 15 || a3 > 15) {
-            if (!inBlock) {
-                inBlock = true;
-                start = x;
-            }
-        } else {
-            if (inBlock) {
-                inBlock = false;
-                ranges.push({ start: start - padding, end: x + padding });
-            }
-        }
+function computeAlphaRows(canvas) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const data = ctx.getImageData(0, 0, w, h).data;
+  const rows = new Array(h).fill(null);
+
+  for (let y = 0; y < h; y += 1) {
+    let left = -1;
+    let right = -1;
+    for (let x = 0; x < w; x += 1) {
+      if (data[(y * w + x) * 4 + 3] > 10) { left = x; break; }
     }
-    if (inBlock) {
-        ranges.push({ start: start - padding, end: width + padding });
+    if (left !== -1) {
+      for (let x = w - 1; x >= 0; x -= 1) {
+        if (data[(y * w + x) * 4 + 3] > 10) { right = x; break; }
+      }
     }
-    return ranges;
+    rows[y] = { left, right };
+  }
+  return { width: w, height: h, rows };
+}
+
+async function loadFrameSet(baseUrl) {
+  const response = await fetch(`${baseUrl}/manifest.json${ASSET_VERSION}`);
+  if (!response.ok) throw new Error(`Failed to load manifest: ${baseUrl}`);
+  const manifest = await response.json();
+  const processedFrames = [];
+  
+  const loadPromises = manifest.frames.map(frameName => 
+    loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`).then(img => {
+      const hologram = convertToSonarHologram(img);
+      return {
+        canvas: hologram,
+        alphaMap: computeAlphaRows(hologram)
+      };
+    })
+  );
+  
+  const loadedFrames = await Promise.all(loadPromises);
+  processedFrames.push(...loadedFrames);
+  
+  return { 
+    frames: processedFrames, 
+    fps: manifest.fps || 8, 
+    naturalWidth: processedFrames[0]?.canvas.width || 960, 
+    naturalHeight: processedFrames[0]?.canvas.height || 960 
+  };
 }
 
 function subtractRanges(baseStart, baseEnd, blockedRanges) {
@@ -135,11 +170,12 @@ function subtractRanges(baseStart, baseEnd, blockedRanges) {
 // --------------------------------------------------------
 // 4. Entities
 // --------------------------------------------------------
-class ProceduralJelly {
-  constructor(imgCanvas, config) {
-    this.canvas = imgCanvas;
-    this.width = imgCanvas.width * config.scale;
-    this.height = imgCanvas.height * config.scale;
+class AnimatedJelly {
+  constructor(animData, config) {
+    this.frames = animData.frames;
+    this.fps = animData.fps;
+    this.width = animData.naturalWidth * config.scale;
+    this.height = animData.naturalHeight * config.scale;
     
     this.centerX = config.x;
     this.centerY = config.y;
@@ -155,64 +191,63 @@ class ProceduralJelly {
     this.vx = 0;
     this.vy = 0;
     
-    this.swaySpeed = config.speed * 2.5;
-    this.swayAmp = config.scale * 15;
+    this.timeOffset = Math.random() * 100;
   }
   
   update(time) {
     const t = time * this.speed + this.phase;
-    this.x = this.centerX + Math.cos(t) * this.radius;
-    this.y = this.centerY + Math.sin(t * 0.8) * this.radius; 
+    // Elegant sweeping curve
+    this.x = this.centerX + Math.sin(t) * this.radius;
+    this.y = this.centerY + Math.cos(t * 0.8) * this.radius * 0.8; 
     
-    this.vx = -Math.sin(t);
-    this.vy = Math.cos(t * 0.8) * 0.8;
+    this.vx = Math.cos(t) * this.radius * this.speed;
+    this.vy = -Math.sin(t * 0.8) * this.radius * this.speed * 0.8;
+  }
+
+  getCurrentFrame(time) {
+    if (!this.frames || this.frames.length === 0) return null;
+    const t = time + this.timeOffset;
+    const frameIdx = Math.floor((t * this.fps)) % this.frames.length;
+    return this.frames[frameIdx];
   }
   
-  drawMask(ctx, time) {
-    if (this.blur > 0 || !this.canvas) return; // Blurred jellies are in BG
+  getMaskRange(time, yPos) {
+    if (this.blur > 0) return null; // Blurred background jellies do not collide with text
     
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    const angle = Math.atan2(this.vy, this.vx);
-    ctx.rotate(angle + Math.PI / 2);
+    const frame = this.getCurrentFrame(time);
+    if (!frame) return null;
     
-    // Wave distortion for tentacles
-    const strips = 20;
-    const stripH = this.height / strips;
-    for (let i = 0; i < strips; i++) {
-        const wave = Math.sin(time * this.swaySpeed + i * 0.5) * this.swayAmp * (i / strips);
-        ctx.drawImage(
-            this.canvas, 
-            0, (this.canvas.height / strips) * i, this.canvas.width, this.canvas.height / strips,
-            -this.width/2 + wave, -this.height/2 + i * stripH, this.width, stripH
-        );
-    }
-    ctx.restore();
+    const localY = yPos - this.y + this.height/2; 
+    if (localY < 0 || localY >= this.height) return null;
+    
+    const imageY = Math.max(0, Math.min(frame.alphaMap.height - 1, Math.floor((localY / this.height) * frame.alphaMap.height)));
+    const row = frame.alphaMap.rows[imageY];
+    
+    if (!row || row.left === -1) return null;
+    
+    const padding = 16; // Hug tightly
+    return {
+      start: this.x - this.width/2 + (row.left / frame.alphaMap.width) * this.width - padding,
+      end: this.x - this.width/2 + (row.right / frame.alphaMap.width) * this.width + padding
+    };
   }
 
   draw(ctx, time) {
-    if (!this.canvas) return;
+    const frame = this.getCurrentFrame(time);
+    if (!frame) return;
     
     ctx.save();
     ctx.translate(this.x, this.y);
+    
     const angle = Math.atan2(this.vy, this.vx);
     ctx.rotate(angle + Math.PI / 2); 
+    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05); // Breath/sway
     
     ctx.globalAlpha = this.opacity;
     ctx.globalCompositeOperation = "screen";
     if (this.blur > 0) ctx.filter = `blur(${this.blur}px)`;
     
-    const strips = 30;
-    const stripH = this.height / strips;
-    for (let i = 0; i < strips; i++) {
-        // Amplitude increases down the body (tentacles)
-        const wave = Math.sin(time * this.swaySpeed + i * 0.4) * this.swayAmp * Math.pow(i / strips, 1.5);
-        ctx.drawImage(
-            this.canvas, 
-            0, (this.canvas.height / strips) * i, this.canvas.width, this.canvas.height / strips,
-            -this.width/2 + wave, -this.height/2 + i * stripH, this.width, stripH
-        );
-    }
+    ctx.drawImage(frame.canvas, -this.width/2, -this.height/2, this.width, this.height);
     ctx.restore();
   }
 }
@@ -258,79 +293,77 @@ class DeepSeaStars {
   }
 }
 
-// Floating Tech Glitches & Overlays
-class TechOverlay {
-  constructor() {
-    this.elements = Array.from({length: 15}, () => ({
-      x: Math.random() * LOGICAL_WIDTH,
-      y: Math.random() * LOGICAL_HEIGHT,
-      w: Math.random() * 80 + 20,
-      h: Math.random() * 20 + 5,
-      type: Math.random() > 0.6 ? 'barcode' : 'text',
-      interval: Math.random() * 4 + 1,
-      visibleTime: Math.random() * 0.8 + 0.1,
-      lastToggle: 0,
-      visible: false
-    }));
-  }
-  update(time) {
-    for (const el of this.elements) {
-      if (el.visible && time - el.lastToggle > el.visibleTime) {
-        el.visible = false;
-        el.lastToggle = time;
-        el.x = Math.random() * LOGICAL_WIDTH;
-        el.y = Math.random() * LOGICAL_HEIGHT;
-      } else if (!el.visible && time - el.lastToggle > el.interval) {
-        el.visible = true;
-        el.lastToggle = time;
-      }
-    }
-  }
+// Static Edge UI Overlays (Flickering, Not Floating)
+class StaticTerminalUI {
   draw(ctx, time) {
     ctx.save();
-    ctx.fillStyle = "rgba(57, 255, 20, 0.9)";
+    ctx.strokeStyle = "#39ff14";
+    ctx.fillStyle = "#39ff14";
     ctx.shadowColor = "#39ff14";
-    ctx.shadowBlur = 5;
-    for (const el of this.elements) {
-      if (!el.visible) continue;
-      
-      if (el.type === 'barcode') {
-        let cx = el.x;
-        while (cx < el.x + el.w) {
-          const bw = Math.random() * 5 + 1;
-          ctx.fillRect(cx, el.y, bw, el.h);
-          cx += bw + Math.random() * 3 + 1;
-        }
-      } else {
-        ctx.font = '10px monospace';
-        const txt = Math.random().toString(16).substr(2, 10).toUpperCase();
-        ctx.fillText(`ERR_${txt}`, el.x, el.y);
-        ctx.fillText(`L:${el.x.toFixed(0)} T:${el.y.toFixed(0)}`, el.x, el.y + 12);
+    ctx.shadowBlur = 2;
+    ctx.lineWidth = 1;
+    
+    // Top Left: Systems Monitor (Flickers fast)
+    if (Math.random() > 0.15) {
+      ctx.font = '10px monospace';
+      ctx.fillText("[ OVR.SYS.99 ]", 40, 50);
+      ctx.fillText(`MEM: ${(Math.random() * 99).toFixed(1)}%`, 40, 65);
+      // Small barcode
+      let bx = 40;
+      for(let i=0; i<15; i++) {
+        const w = Math.random() * 4 + 1;
+        ctx.fillRect(bx, 75, w, 10);
+        bx += w + 2;
       }
     }
+
+    // Top Right: Target Box (Flickers slow)
+    if (Math.sin(time * 5) > -0.8) {
+      ctx.beginPath();
+      ctx.moveTo(LOGICAL_WIDTH - 150, 40); ctx.lineTo(LOGICAL_WIDTH - 170, 40); ctx.lineTo(LOGICAL_WIDTH - 170, 60);
+      ctx.moveTo(LOGICAL_WIDTH - 40, 40); ctx.lineTo(LOGICAL_WIDTH - 20, 40); ctx.lineTo(LOGICAL_WIDTH - 20, 60);
+      ctx.moveTo(LOGICAL_WIDTH - 170, 100); ctx.lineTo(LOGICAL_WIDTH - 170, 120); ctx.lineTo(LOGICAL_WIDTH - 150, 120);
+      ctx.moveTo(LOGICAL_WIDTH - 20, 100); ctx.lineTo(LOGICAL_WIDTH - 20, 120); ctx.lineTo(LOGICAL_WIDTH - 40, 120);
+      ctx.stroke();
+      ctx.fillText("TARGET.AQ", LOGICAL_WIDTH - 120, 85);
+    }
+    
+    // Right Edge: Vertical Ruler
+    ctx.beginPath();
+    const rightX = LOGICAL_WIDTH - 30;
+    ctx.moveTo(rightX, 200); ctx.lineTo(rightX, 600);
+    for(let i = 0; i <= 400; i += 20) {
+      ctx.moveTo(rightX, 200 + i); 
+      ctx.lineTo(rightX + (i % 100 === 0 ? 15 : 8), 200 + i);
+    }
+    ctx.stroke();
+
+    // Bottom Left: Data Stream Status
+    if (Math.random() > 0.05) {
+      ctx.fillText("DATA STREAM INTACT", 40, LOGICAL_HEIGHT - 60);
+      ctx.fillRect(40, LOGICAL_HEIGHT - 50, 100 * (0.5 + Math.sin(time*2)*0.5), 4);
+      ctx.strokeStyle = "rgba(57, 255, 20, 0.4)";
+      ctx.strokeRect(40, LOGICAL_HEIGHT - 50, 100, 4);
+    }
+
+    // Bottom Right: Err Codes
+    if (Math.random() > 0.3) {
+      const errCode = Math.random().toString(16).substr(2, 8).toUpperCase();
+      ctx.fillStyle = "rgba(0, 243, 255, 0.9)"; // Cyan error
+      ctx.fillText(`ERR_${errCode}`, LOGICAL_WIDTH - 150, LOGICAL_HEIGHT - 50);
+    }
+
+    // Top Edge / Bottom Edge Grid Crosshairs
+    ctx.strokeStyle = "rgba(0, 255, 150, 0.3)";
+    ctx.beginPath();
+    for (let x = 100; x < LOGICAL_WIDTH; x += 200) {
+      ctx.moveTo(x, 10); ctx.lineTo(x, 25);
+      ctx.moveTo(x, LOGICAL_HEIGHT - 25); ctx.lineTo(x, LOGICAL_HEIGHT - 10);
+    }
+    ctx.stroke();
+
     ctx.restore();
   }
-}
-
-function drawBackgroundNumbers(ctx, time) {
-  ctx.save();
-  // Huge Background Numbers
-  ctx.globalAlpha = 0.04;
-  ctx.font = '280px monospace';
-  ctx.fillStyle = "#39ff14";
-  ctx.fillText("302", LOGICAL_WIDTH - 500, 300);
-  ctx.fillText("SYS", 100, LOGICAL_HEIGHT - 150);
-  
-  // Dynamic coordinate grid values
-  ctx.globalAlpha = 0.4;
-  ctx.font = '14px monospace';
-  for(let i=0; i<6; i++) {
-    const x = (LOGICAL_WIDTH * 0.2 * i + time * 30) % LOGICAL_WIDTH;
-    const y = LOGICAL_HEIGHT * 0.85 + Math.sin(time + i) * 60;
-    const val = (Math.sin(time*2 + i) * 1000000).toFixed(0);
-    ctx.fillText(`COORD [X:${val}]`, x, y);
-  }
-  ctx.restore();
 }
 
 // --------------------------------------------------------
@@ -356,28 +389,24 @@ async function initOpeningCanvas() {
   window.addEventListener("resize", resize);
   resize();
 
-  // Load static jellyfish images generated via WaveSpeed
-  const [jImg1, jImg2, jImg3] = await Promise.all([
-    loadImage("/assets/images/jelly/j1.jpeg").then(convertToSonarHologram),
-    loadImage("/assets/images/jelly/j2.jpeg").then(convertToSonarHologram),
-    loadImage("/assets/images/jelly/j3.jpeg").then(convertToSonarHologram)
+  // Load animated frames and process them into point clouds per frame!
+  const [cyanAnim, pinkAnim, violetAnim] = await Promise.all([
+    loadFrameSet(FRAME_SETS.cyan),
+    loadFrameSet(FRAME_SETS.pink),
+    loadFrameSet(FRAME_SETS.violet)
   ]);
   
-  const maskCanvas = document.createElement("canvas");
-  maskCanvas.width = LOGICAL_WIDTH;
-  maskCanvas.height = LOGICAL_HEIGHT;
-  const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
-  
   const jellies = [
-    // Sharp Foreground
-    new ProceduralJelly(jImg1, { scale: 0.6, x: LOGICAL_WIDTH * 0.35, y: LOGICAL_HEIGHT * 0.6, radius: 120, speed: 0.3, phase: 0, opacity: 1.0, blur: 0 }),
-    new ProceduralJelly(jImg2, { scale: 0.55, x: LOGICAL_WIDTH * 0.65, y: LOGICAL_HEIGHT * 0.45, radius: 150, speed: 0.25, phase: Math.PI, opacity: 0.95, blur: 0 }),
-    // Blurred Background
-    new ProceduralJelly(jImg3, { scale: 0.4, x: LOGICAL_WIDTH * 0.8, y: LOGICAL_HEIGHT * 0.25, radius: 80, speed: 0.15, phase: Math.PI/2, opacity: 0.6, blur: 6 })
+    // Sharp Foreground Jellies (Collide with text)
+    new AnimatedJelly(cyanAnim, { scale: 0.65, x: LOGICAL_WIDTH * 0.35, y: LOGICAL_HEIGHT * 0.5, radius: 150, speed: 0.4, phase: 0, opacity: 1.0, blur: 0 }),
+    new AnimatedJelly(pinkAnim, { scale: 0.55, x: LOGICAL_WIDTH * 0.75, y: LOGICAL_HEIGHT * 0.45, radius: 180, speed: 0.35, phase: Math.PI, opacity: 0.95, blur: 0 }),
+    // Blurred Background Jellies (Ignore text collision)
+    new AnimatedJelly(violetAnim, { scale: 0.4, x: LOGICAL_WIDTH * 0.8, y: LOGICAL_HEIGHT * 0.25, radius: 90, speed: 0.2, phase: Math.PI/2, opacity: 0.5, blur: 5 }),
+    new AnimatedJelly(cyanAnim, { scale: 0.45, x: LOGICAL_WIDTH * 0.2, y: LOGICAL_HEIGHT * 0.2, radius: 100, speed: 0.25, phase: Math.PI*1.5, opacity: 0.4, blur: 8 })
   ];
 
   const starfield = new DeepSeaStars();
-  const techOverlay = new TechOverlay();
+  const staticUI = new StaticTerminalUI();
   
   let lastTime = performance.now() / 1000;
   
@@ -388,25 +417,19 @@ async function initOpeningCanvas() {
     
     // Clear & Base dark navy/black background
     ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-    ctx.fillStyle = "#01080a";
+    ctx.fillStyle = "#02080a";
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
-    drawBackgroundNumbers(ctx, time);
     starfield.update(dt, time);
     starfield.draw(ctx, time);
 
     for (const j of jellies) j.update(time);
     
-    // Offscreen Pixel-Perfect Mask Rendering for sharp Jellies ONLY
-    maskCtx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-    for (const j of jellies) j.drawMask(maskCtx, time);
-    const maskData = maskCtx.getImageData(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT).data;
-    
     // TEXT WRAPPING
     ctx.font = FONT;
     ctx.textBaseline = "alphabetic";
     
-    const SCROLL_SPEED = 20; 
+    const SCROLL_SPEED = 22; 
     const totalScroll = time * SCROLL_SPEED;
     const scrolledLines = Math.floor(totalScroll / LINE_HEIGHT);
     const yOffset = totalScroll % LINE_HEIGHT;
@@ -423,12 +446,17 @@ async function initOpeningCanvas() {
         if(l) cur2 = l.end; else { cur2 = { segmentIndex: 0, graphemeIndex: 0 }; layoutNextLine(PREP_2, cur2, 400); }
     }
 
-    ctx.shadowColor = "#39ff14";
-    ctx.shadowBlur = 4;
+    ctx.shadowColor = "#00f3ff";
+    ctx.shadowBlur = 2;
     
+    // Collect mask ranges dynamically for the current frame
     for (let baselineY = -40 - yOffset; baselineY <= LOGICAL_HEIGHT + 60; baselineY += LINE_HEIGHT) {
-      // 12px extremely tight padding to hug the point-cloud jellies
-      const blocked = getBlockedRangesForY(maskData, baselineY, LOGICAL_WIDTH, 12); 
+      
+      const blocked = [];
+      for (const j of jellies) {
+        const range = j.getMaskRange(time, baselineY - LINE_HEIGHT * 0.4);
+        if (range) blocked.push(range);
+      }
       
       // Column 1 (Left Area)
       const slots1 = subtractRanges(80, LOGICAL_WIDTH / 2 - 40, blocked);
@@ -438,21 +466,21 @@ async function initOpeningCanvas() {
         if (!line) { cur1 = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(PREP_1, cur1, slotWidth); }
         if (line) {
           if (line.start.segmentIndex === line.end.segmentIndex && line.start.graphemeIndex === line.end.graphemeIndex) continue;
-          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.8)";
+          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.7)";
           ctx.fillText(line.text.trim(), slot.start, baselineY);
           cur1 = line.end;
         }
       }
 
       // Column 2 (Right Area)
-      const slots2 = subtractRanges(LOGICAL_WIDTH / 2 + 40, LOGICAL_WIDTH - 120, blocked);
+      const slots2 = subtractRanges(LOGICAL_WIDTH / 2 + 40, LOGICAL_WIDTH - 80, blocked);
       for (const slot of slots2) {
         const slotWidth = slot.end - slot.start;
         let line = layoutNextLine(PREP_2, cur2, slotWidth);
         if (!line) { cur2 = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(PREP_2, cur2, slotWidth); }
         if (line) {
           if (line.start.segmentIndex === line.end.segmentIndex && line.start.graphemeIndex === line.end.graphemeIndex) continue;
-          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.8)";
+          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.7)";
           ctx.fillText(line.text.trim(), slot.start, baselineY);
           cur2 = line.end;
         }
@@ -467,8 +495,8 @@ async function initOpeningCanvas() {
       j.draw(ctx, time);
     }
     
-    techOverlay.update(time);
-    techOverlay.draw(ctx, time);
+    // Render Static Top-Level UI Elements
+    staticUI.draw(ctx, time);
     
     requestAnimationFrame(renderFrame);
   };
