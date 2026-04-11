@@ -89,15 +89,21 @@ async function initOpeningCanvas() {
     ctx.fillStyle = "#ffffff"; 
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
+    // Blend the original sky colors softly so the gradient is perfectly preserved
+    // and looks "dense and tight"
+    ctx.globalAlpha = 0.55;
+    ctx.drawImage(bgImg, 0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+    ctx.globalAlpha = 1.0;
+    
     // 1. 绘制背景动态天空（字符流）
     // 颜色完全100%还原原图，排列紧密，具有时间波动的流体效果
-    ctx.font = 'bold 8px "SF Mono", Menlo, Consolas, monospace';
+    ctx.font = 'bold 8.5px "SF Mono", Menlo, Consolas, monospace';
     ctx.textBaseline = "top";
     
     for (let i = 0; i < skyCells.length; i++) {
         const cell = skyCells[i];
         // 时间波浪函数，让字符产生像云海一样的交替流动感
-        const wave = Math.floor(time * 12 + cell.cx * 0.1 + cell.cy * 0.05);
+        const wave = Math.floor(time * 10 + cell.cx * 0.12 + cell.cy * 0.08);
         const char = SHIMMER_CHARS[Math.abs(wave) % SHIMMER_CHARS.length];
         
         ctx.fillStyle = cell.color;
