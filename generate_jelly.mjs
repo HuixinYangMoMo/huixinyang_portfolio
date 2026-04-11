@@ -12,21 +12,24 @@ async function downloadFile(url, dest) {
 }
 
 async function run() {
-  console.log("Generating jellyfish...");
-  try {
-    const output = await wavespeed.run(
-      "wavespeed-ai/flux-dev/ultra",
-      { 
-        prompt: "holographic neon green and cyan jellyfish, intricate long flowing tentacles, deep sea terminal radar scan style, CRT monitor aesthetic, pitch black background, pixel perfect point cloud, highly detailed", 
-        image_size: "landscape_16_9",
-        num_inference_steps: 28,
-        guidance_scale: 3.5
-      }
-    );
-    await downloadFile(output["outputs"][0], "assets/new_jelly.png");
-    console.log("Done: assets/new_jelly.png");
-  } catch (e) {
-    console.error("Failed:", e);
+  const prompts = [
+    "holographic cyan and neon green jellyfish, large bell with delicate point cloud radar scan style, CRT monitor aesthetic, isolated on pitch black background, highly detailed, pure cyan and green, deep sea glowing bioluminescence",
+    "holographic neon cyan jellyfish, extremely long flowing tentacles, point cloud radar scan style, CRT monitor aesthetic, isolated on pitch black background, highly detailed, pure cyan and green, deep sea glowing bioluminescence",
+    "holographic neon green jellyfish, dynamic angle, point cloud radar scan style, CRT monitor aesthetic, isolated on pitch black background, highly detailed, pure cyan and green, deep sea glowing bioluminescence"
+  ];
+
+  for (let i = 0; i < 3; i++) {
+    console.log(`Generating jellyfish ${i+1}...`);
+    try {
+      const output = await wavespeed.run(
+        "wavespeed-ai/z-image/turbo",
+        { prompt: prompts[i], image_size: "landscape_16_9" }
+      );
+      await downloadFile(output.outputs[0], `assets/images/jelly/new_j${i+1}.jpeg`);
+      console.log(`Done: assets/images/jelly/new_j${i+1}.jpeg`);
+    } catch (e) {
+      console.error(`Failed ${i+1}:`, e.message);
+    }
   }
 }
 run();

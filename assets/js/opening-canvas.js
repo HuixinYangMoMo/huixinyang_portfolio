@@ -41,7 +41,7 @@ function loadImage(src) {
   });
 }
 
-function convertToThermalHologram(img) {
+function convertToRadarHologram(img) {
   const canvas = document.createElement("canvas");
   const w = img.width || img.naturalWidth || 960;
   const h = img.height || img.naturalHeight || 960;
@@ -55,28 +55,33 @@ function convertToThermalHologram(img) {
   for (let i = 0, y = 0; y < h; y++) {
     for (let x = 0; x < w; x++, i += 4) {
       const a = data[i+3];
-      if (a < 10) { data[i+3] = 0; continue; }
+      if (a < 15) { data[i+3] = 0; continue; }
       
       const r = data[i], g = data[i+1], b = data[i+2];
       const luma = (r + g + b) / 3;
       
-      // Point cloud noise filtering (deterministic, very fast)
-      const noise = ((x * 1973 + y * 9277) % 100);
-      if (noise > luma) {
-        data[i+3] = 0; 
-        continue; 
-      }
-      
-      // Thermal Palette
-      if (luma > 180) { 
-        data[i] = 255; data[i+1] = 255; data[i+2] = 100; // Bright yellow/white core
-      } else if (luma > 90) { 
-        data[i] = 57; data[i+1] = 255; data[i+2] = 20;   // Neon green
+      if (luma < 15) { data[i+3] = 0; continue; }
+
+      // Pure Cyan & Neon Green Palette (No Yellow/Red)
+      if (luma > 160) { 
+        data[i] = 57; data[i+1] = 255; data[i+2] = 20; // Neon Green Core
+      } else if (luma > 80) { 
+        data[i] = 0; data[i+1] = 243; data[i+2] = 255; // Bright Cyan
       } else { 
-        data[i] = 0; data[i+1] = 180; data[i+2] = 255;   // Deep cyan fringes
+        data[i] = 0; data[i+1] = 100; data[i+2] = 200; // Deep Blue edges
       }
       
-      // Smooth ethereal transparency
+      // Point cloud noise filtering (deterministic, very fast)
+      // Only apply noise to darker areas to preserve the glowing core
+      if (luma < 160) {
+        const noise = ((x * 1973 + y * 9277) % 100);
+        if (noise > (luma * 0.8)) {
+          data[i+3] = 0; 
+          continue; 
+        }
+      }
+      
+      // Soft ethereal transparency
       data[i+3] = Math.min(255, luma * 1.5);
     }
   }
@@ -84,13 +89,12 @@ function convertToThermalHologram(img) {
   return canvas;
 }
 
-// Bakes a heavily blurred version of a canvas for soft glowing
 function bakeGlow(canvas, blurRadius) {
   const glowCanvas = document.createElement("canvas");
   glowCanvas.width = canvas.width;
   glowCanvas.height = canvas.height;
   const ctx = glowCanvas.getContext("2d");
-  ctx.filter = `blur(${blurRadius}px) saturate(150%)`;
+  ctx.filter = `blur(${blurRadius}px) saturate(120%)`;
   ctx.drawImage(canvas, 0, 0);
   return glowCanvas;
 }
@@ -104,7 +108,7 @@ async function loadFrameSet(baseUrl) {
   // Background load with glow baked in
   const loadPromises = manifest.frames.map(frameName => 
     loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`).then(img => {
-      const baseHolo = convertToThermalHologram(img);
+      const baseHolo = convertToRadarHologram(img);
       return { 
         canvas: baseHolo,
         glowCanvas: bakeGlow(baseHolo, 12) 
@@ -137,7 +141,7 @@ function getBlockedRangesForY(maskData, mw, mh, y, logicalWidth, padding) {
     const offset = my * mw * 4;
     for (let mx = 0; mx < mw; mx++) {
         const alpha = maskData[offset + mx * 4 + 3];
-        if (alpha > 20) {
+        if (alpha > 15) {
             if (!inBlock) {
                 inBlock = true;
                 startX = mx;
@@ -205,14 +209,13 @@ class AnimatedJelly {
   }
   
   update(time) {
-    // Pure circular orbit
     const t = time * this.speed + this.phase;
-    this.x = this.centerX + Math.cos(t) * this.radius;
-    this.y = this.centerY + Math.sin(t) * this.radius;
+    // Smooth circular orbit
+    this.x = this.centerX + Math.sin(t) * this.radius;
+    this.y = this.centerY + Math.cos(t * 0.8) * this.radius * 0.7; 
     
-    // Velocity vectors for rotation (tangent to circle)
-    this.vx = -Math.sin(t);
-    this.vy = Math.cos(t);
+    this.vx = Math.cos(t) * this.radius * this.speed;
+    this.vy = -Math.sin(t * 0.8) * this.radius * this.speed * 0.7;
   }
 
   getCurrentFrame(time) {
@@ -232,9 +235,6 @@ class AnimatedJelly {
     const angle = Math.atan2(this.vy, this.vx);
     ctx.rotate(angle + Math.PI / 2);
     
-    // Minimal sway for smooth mask
-    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05); 
-    
     ctx.globalCompositeOperation = 'source-over';
     ctx.drawImage(frame.canvas, (-this.width/2) * MASK_SCALE, (-this.height/2) * MASK_SCALE, this.width * MASK_SCALE, this.height * MASK_SCALE);
     ctx.restore();
@@ -248,17 +248,15 @@ class AnimatedJelly {
     ctx.translate(this.x, this.y);
     const angle = Math.atan2(this.vy, this.vx);
     ctx.rotate(angle + Math.PI / 2); 
-    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05); // Smooth breathing
     
-    // 1. Draw base jelly
     ctx.globalAlpha = this.opacity;
     ctx.globalCompositeOperation = "screen";
     if (this.blur > 0) ctx.filter = `blur(${this.blur}px)`;
     
-    // Pre-baked glow layer! Highly performant, extremely dreamy.
+    // Draw pre-baked bloom (very performant)
     ctx.drawImage(frame.glowCanvas, -this.width/2, -this.height/2, this.width, this.height);
     
-    // Core sharp layer
+    // Draw solid core
     ctx.globalAlpha = this.opacity * 0.8;
     ctx.drawImage(frame.canvas, -this.width/2, -this.height/2, this.width, this.height);
     
@@ -266,10 +264,10 @@ class AnimatedJelly {
   }
 }
 
-// Smooth background stars/particles (No flickering, just smooth floating)
+// Deep Sea Stars & Point Cloud Particles (Smooth)
 class DeepSeaStars {
   constructor() {
-    this.stars = Array.from({length: 120}, () => ({
+    this.stars = Array.from({length: 150}, () => ({
       x: Math.random() * LOGICAL_WIDTH,
       y: Math.random() * LOGICAL_HEIGHT,
       size: Math.random() > 0.85 ? Math.random() * 3 + 1.5 : Math.random() * 1.5 + 0.5,
@@ -287,22 +285,18 @@ class DeepSeaStars {
     ctx.save();
     ctx.globalCompositeOperation = "screen";
     for (const star of this.stars) {
-      // Smooth breathing glow instead of sharp flickering
-      const alpha = (Math.sin(time + star.phase) + 1) / 2 * 0.5 + 0.3;
+      const alpha = (Math.sin(time + star.phase) + 1) / 2 * 0.4 + 0.2;
       
       if (star.size > 2.5) {
-        // Crosshair stars
         ctx.fillStyle = `rgba(57, 255, 20, ${alpha})`; 
         ctx.shadowColor = "#39ff14";
         ctx.shadowBlur = 8;
         const fs = star.size * 3;
         ctx.fillRect(star.x - fs, star.y - 0.5, fs * 2, 1);
         ctx.fillRect(star.x - 0.5, star.y - fs, 1, fs * 2);
-        // Center core
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha + 0.2})`;
         ctx.beginPath(); ctx.arc(star.x, star.y, star.size*0.5, 0, Math.PI*2); ctx.fill();
       } else {
-        // Round dust
         ctx.fillStyle = `rgba(0, 243, 255, ${alpha})`;
         ctx.beginPath(); ctx.arc(star.x, star.y, star.size, 0, Math.PI*2); ctx.fill();
       }
@@ -311,14 +305,14 @@ class DeepSeaStars {
   }
 }
 
-// Flashing Overlays (Only UI elements flash at fixed locations)
+// Edge Flashing Terminals
 class FlashUI {
   constructor() {
     this.elements = [
       { x: LOGICAL_WIDTH - 250, y: 150, type: 'hud', w: 180, h: 60, interval: 2.5, duration: 0.3 },
       { x: 150, y: 100, type: 'barcode', w: 100, h: 15, interval: 4.0, duration: 0.15 },
       { x: LOGICAL_WIDTH - 200, y: LOGICAL_HEIGHT - 150, type: 'err', w: 100, h: 20, interval: 3.2, duration: 0.4 },
-      { x: 300, y: LOGICAL_HEIGHT - 200, type: 'reticle', w: 50, h: 50, interval: 5.0, duration: 0.8 }
+      { x: 250, y: LOGICAL_HEIGHT - 200, type: 'reticle', w: 50, h: 50, interval: 5.0, duration: 0.8 }
     ].map(e => ({ ...e, lastToggle: Math.random() * 5, visible: false }));
   }
   
@@ -376,6 +370,25 @@ class FlashUI {
   }
 }
 
+function drawBackgroundNumbers(ctx, time) {
+  ctx.save();
+  ctx.globalAlpha = 0.04;
+  ctx.font = '280px monospace';
+  ctx.fillStyle = "#39ff14";
+  ctx.fillText("302", LOGICAL_WIDTH - 500, 300);
+  ctx.fillText("SYS", 100, LOGICAL_HEIGHT - 150);
+  
+  ctx.globalAlpha = 0.4;
+  ctx.font = '14px monospace';
+  for(let i=0; i<6; i++) {
+    const x = (LOGICAL_WIDTH * 0.2 * i + time * 30) % LOGICAL_WIDTH;
+    const y = LOGICAL_HEIGHT * 0.85 + Math.sin(time + i) * 60;
+    const val = (Math.sin(time*2 + i) * 1000000).toFixed(0);
+    ctx.fillText(`COORD [X:${val}]`, x, y);
+  }
+  ctx.restore();
+}
+
 // --------------------------------------------------------
 // 5. Main Initialization
 // --------------------------------------------------------
@@ -405,7 +418,6 @@ async function initOpeningCanvas() {
     loadFrameSet(FRAME_SETS.violet)
   ]);
   
-  // Offscreen Canvas for pixel-perfect rotation-aware collision!
   const MW = LOGICAL_WIDTH * MASK_SCALE;
   const MH = LOGICAL_HEIGHT * MASK_SCALE;
   const maskCanvas = document.createElement("canvas");
@@ -413,18 +425,16 @@ async function initOpeningCanvas() {
   maskCanvas.height = MH;
   const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
   
-  // Jellies Setup: Different sizes, orbiting a central point
   const CX = LOGICAL_WIDTH / 2;
   const CY = LOGICAL_HEIGHT / 2;
   const jellies = [
-    // Big foreground jelly (Orbital path 1)
-    new AnimatedJelly(cyanAnim, { scale: 0.45, centerX: CX, centerY: CY, radius: 240, speed: 0.25, phase: 0, opacity: 1.0, blur: 0 }),
-    // Medium foreground jelly (Orbital path 2)
-    new AnimatedJelly(pinkAnim, { scale: 0.35, centerX: CX - 100, centerY: CY, radius: 180, speed: 0.35, phase: Math.PI * 0.8, opacity: 0.9, blur: 0 }),
-    // Small foreground jelly (Orbital path 3)
-    new AnimatedJelly(violetAnim, { scale: 0.25, centerX: CX + 150, centerY: CY - 50, radius: 150, speed: 0.45, phase: Math.PI * 1.5, opacity: 0.95, blur: 0 }),
+    // Much smaller jellies, scattered around
+    new AnimatedJelly(cyanAnim, { scale: 0.35, centerX: CX - 150, centerY: CY + 100, radius: 120, speed: 0.3, phase: 0, opacity: 1.0, blur: 0 }),
+    new AnimatedJelly(pinkAnim, { scale: 0.28, centerX: CX + 200, centerY: CY - 100, radius: 150, speed: 0.35, phase: Math.PI * 0.8, opacity: 0.95, blur: 0 }),
+    new AnimatedJelly(violetAnim, { scale: 0.22, centerX: CX, centerY: CY + 200, radius: 100, speed: 0.45, phase: Math.PI * 1.5, opacity: 0.9, blur: 0 }),
     // Blurred background giants (Depth)
-    new AnimatedJelly(cyanAnim, { scale: 0.6, centerX: CX, centerY: CY, radius: 100, speed: 0.15, phase: Math.PI, opacity: 0.5, blur: 6 })
+    new AnimatedJelly(cyanAnim, { scale: 0.4, centerX: CX - 200, centerY: CY - 150, radius: 80, speed: 0.15, phase: Math.PI, opacity: 0.5, blur: 8 }),
+    new AnimatedJelly(pinkAnim, { scale: 0.5, centerX: CX + 250, centerY: CY + 100, radius: 100, speed: 0.2, phase: Math.PI * 1.2, opacity: 0.6, blur: 12 })
   ];
 
   const starfield = new DeepSeaStars();
@@ -455,21 +465,17 @@ async function initOpeningCanvas() {
 
     for (const j of jellies) j.update(time);
     
-    // =======================================
     // SCALED OFFSCREEN MASK FOR COLLISION
-    // =======================================
     maskCtx.clearRect(0, 0, MW, MH);
     for (const j of jellies) j.drawMask(maskCtx, time);
     const maskData = maskCtx.getImageData(0, 0, MW, MH).data;
     
-    // =======================================
     // TEXT WRAPPING & LAYOUT (SMOOTH FLOW)
-    // =======================================
     ctx.font = FONT;
     ctx.textBaseline = "alphabetic";
-    ctx.shadowBlur = 0; // No shadow for sharp text
+    ctx.shadowBlur = 0;
     
-    const SCROLL_SPEED = 25; 
+    const SCROLL_SPEED = 20; 
     const totalScroll = time * SCROLL_SPEED;
     const scrolledLines = Math.floor(totalScroll / LINE_HEIGHT);
     const yOffset = totalScroll % LINE_HEIGHT;
@@ -487,7 +493,6 @@ async function initOpeningCanvas() {
     }
     
     for (let baselineY = -40 - yOffset; baselineY <= LOGICAL_HEIGHT + 60; baselineY += LINE_HEIGHT) {
-      // Calculate blocked regions for this row using the scaled mask
       const blocked = getBlockedRangesForY(maskData, MW, MH, baselineY - LINE_HEIGHT * 0.5, LOGICAL_WIDTH, 14); 
       
       // Column 1 (Left Area)
@@ -519,13 +524,13 @@ async function initOpeningCanvas() {
       }
     }
     
-    // Foreground Layer - Jellies (Soft Glow / Bloom pass applied inside draw)
+    // Foreground Layer - Jellies
     const sortedJellies = [...jellies].sort((a, b) => b.blur - a.blur);
     for (const j of sortedJellies) {
       j.draw(ctx, time);
     }
     
-    // Top Layer - Flashing UI
+    drawBackgroundNumbers(ctx, time);
     flashUI.update(time);
     flashUI.draw(ctx, time);
     
