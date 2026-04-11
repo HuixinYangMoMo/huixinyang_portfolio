@@ -1,7 +1,9 @@
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;
-const CHAR_WIDTH = 4;
-const CHAR_HEIGHT = 6;
+
+// 超高密度的字符网格，让排列“紧密有致”
+const CHAR_WIDTH = 5;
+const CHAR_HEIGHT = 7;
 const COLS = Math.floor(LOGICAL_WIDTH / CHAR_WIDTH);
 const ROWS = Math.floor(LOGICAL_HEIGHT / CHAR_HEIGHT);
 
@@ -20,11 +22,8 @@ function loadImage(src) {
   });
 }
 
-// Map brightness to structure density. Darker = denser characters.
-const DENSE_CHARS = "█▓▒M%W8#=o*-:.  ";
-
-// Animated characters for the "floating/shimmering" parts like the sky
-const SHIMMER_CHARS = ["*", "+", "=", "~", "x", "-", "."];
+// 动态字符集：紫色的天空/海洋使用的闪动波点
+const SHIMMER_CHARS = ["*", "+", "=", "~", "-", ".", "x"];
 
 async function initOpeningCanvas() {
   const canvas = document.querySelector("[data-opening-canvas]");
@@ -46,99 +45,69 @@ async function initOpeningCanvas() {
   window.addEventListener("resize", resize);
   resize();
 
-  // Load the newly perfectly mapped landscape reference image
-  const imgUrl = `/assets/images/pixel/original_hallway.png${ASSET_VERSION}`;
-  const baseImg = await loadImage(imgUrl);
+  // 加载前景实体（门窗、墙壁、白云等保持静止的结构）
+  const fgImg = await loadImage(`/assets/images/pixel/hallway_fg.png${ASSET_VERSION}`);
   
-  // 1. Offscreen processing canvas
+  // 加载背景天空（被用来做成 ASCII 波点的颜色数据）
+  const bgImg = await loadImage(`/assets/images/pixel/hallway_bg.png${ASSET_VERSION}`);
+  
+  // 解析背景天空数据，转化为 ASCII 波点网格
   const offCanvas = document.createElement("canvas");
   offCanvas.width = COLS;
   offCanvas.height = ROWS;
   const offCtx = offCanvas.getContext("2d", { willReadFrequently: true });
-  offCtx.drawImage(baseImg, 0, 0, COLS, ROWS);
-  const imgData = offCtx.getImageData(0, 0, COLS, ROWS).data;
+  offCtx.drawImage(bgImg, 0, 0, COLS, ROWS);
+  const bgData = offCtx.getImageData(0, 0, COLS, ROWS).data;
   
-  // 2. Pre-bake static elements (Walls, Doors, Windows, solid clouds)
-  // This gives the immense performance boost while preserving intricate resolution
-  const staticCanvas = document.createElement("canvas");
-  staticCanvas.width = LOGICAL_WIDTH;
-  staticCanvas.height = LOGICAL_HEIGHT;
-  const sCtx = staticCanvas.getContext("2d", { alpha: false });
-  sCtx.fillStyle = "#ffffff"; 
-  sCtx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-  sCtx.font = 'bold 6px "SF Mono", Menlo, Consolas, monospace';
-  sCtx.textBaseline = "top";
-  
-  const dynamicCells = [];
-  
+  const skyCells = [];
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       const idx = (y * COLS + x) * 4;
-      const r = imgData[idx];
-      const g = imgData[idx + 1];
-      const b = imgData[idx + 2];
-      
-      const luma = 0.299 * r + 0.587 * g + 0.114 * b;
-      
-      // True Whitespace: The pure bright clouds
-      if (luma > 230 && r > 230 && g > 230 && b > 230) {
-          continue; // Leave blank (white)
-      }
-      
-      // Is it the purple/blue sky or water? 
-      // The original has high blue/purple content in the sky and ceiling ocean
-      const isSky = (b > g + 10) && (luma > 50 && luma < 210);
-      
-      // 3. Selection of dynamic vs static
-      // We randomly pick ~85% of the sky cells to shimmer, the rest are static for stability
-      if (isSky && Math.random() > 0.15) {
-        dynamicCells.push({ x, y, r, g, b });
-      } else {
-        // Draw static structure (Doors, wall textures, outlines)
-        // Map luma strictly to density char
-        let dIdx = Math.floor((luma / 255) * DENSE_CHARS.length);
-        dIdx = Math.max(0, Math.min(DENSE_CHARS.length - 1, dIdx));
-        const char = DENSE_CHARS[dIdx];
-        
-        if (char !== " ") {
-            sCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-            sCtx.fillText(char, x * CHAR_WIDTH, y * CHAR_HEIGHT);
-        }
+      const a = bgData[idx + 3];
+      if (a > 10) { // 如果是背景/天空
+        const r = bgData[idx];
+        const g = bgData[idx + 1];
+        const b = bgData[idx + 2];
+        skyCells.push({
+          x: x * CHAR_WIDTH, 
+          y: y * CHAR_HEIGHT, 
+          color: `rgb(${r}, ${g}, ${b})`,
+          cx: x,
+          cy: y
+        });
       }
     }
   }
 
+  let lastTime = performance.now() / 1000;
+  
   const renderFrame = (now) => {
     const time = now / 1000;
+    lastTime = time;
     
-    // Clear back to white
+    // 纯白底色
     ctx.fillStyle = "#ffffff"; 
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
-    // Infinite Zoom effect (Gentle depth breathing to feel alive)
-    ctx.save();
-    const scale = 1.0 + Math.sin(time * 0.25) * 0.015; 
-    ctx.translate(LOGICAL_WIDTH/2, LOGICAL_HEIGHT/2);
-    ctx.scale(scale, scale);
-    ctx.translate(-LOGICAL_WIDTH/2, -LOGICAL_HEIGHT/2);
-    
-    // 4. Paint the highly detailed static layout (the firm structure)
-    ctx.drawImage(staticCanvas, 0, 0);
-    
-    // 5. Paint the animated characters (the shimmering sky/water)
-    ctx.font = 'bold 6px "SF Mono", Menlo, Consolas, monospace';
+    // 1. 绘制背景动态天空（字符流）
+    // 颜色完全100%还原原图，排列紧密，具有时间波动的流体效果
+    ctx.font = 'bold 8px "SF Mono", Menlo, Consolas, monospace';
     ctx.textBaseline = "top";
     
-    for (const cell of dynamicCells) {
-        // Wave shifts characters sequentially across the sky array
-        const wave = Math.floor(time * 8 + cell.x * 0.1 + cell.y * 0.05);
+    for (let i = 0; i < skyCells.length; i++) {
+        const cell = skyCells[i];
+        // 时间波浪函数，让字符产生像云海一样的交替流动感
+        const wave = Math.floor(time * 12 + cell.cx * 0.1 + cell.cy * 0.05);
         const char = SHIMMER_CHARS[Math.abs(wave) % SHIMMER_CHARS.length];
         
-        ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`;
-        ctx.fillText(char, cell.x * CHAR_WIDTH, cell.y * CHAR_HEIGHT);
+        ctx.fillStyle = cell.color;
+        ctx.fillText(char, cell.x, cell.y);
     }
     
-    ctx.restore();
+    // 2. 绘制前景静止实体（直接盖在上面的原图切片）
+    // 这保证了门窗、白云的边缘绝对锋利清晰，完全按照原图展示，静止且无任何改变
+    ctx.drawImage(fgImg, 0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+    
     requestAnimationFrame(renderFrame);
   };
   
