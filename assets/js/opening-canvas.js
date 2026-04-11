@@ -1,4 +1,4 @@
-import { prepareWithSegments, layoutNextLine } from "{{ '/assets/libs/layout.js' | relative_url }}";
+import { prepareWithSegments, layoutNextLine } from "@chenglou/pretext";
 
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;
@@ -358,9 +358,9 @@ async function initOpeningCanvas() {
 
   // Load static jellyfish images generated via WaveSpeed
   const [jImg1, jImg2, jImg3] = await Promise.all([
-    loadImage("{{ '/assets/images/jelly/j1.jpeg' | relative_url }}").then(convertToSonarHologram),
-    loadImage("{{ '/assets/images/jelly/j2.jpeg' | relative_url }}").then(convertToSonarHologram),
-    loadImage("{{ '/assets/images/jelly/j3.jpeg' | relative_url }}").then(convertToSonarHologram)
+    loadImage("/assets/images/jelly/j1.jpeg").then(convertToSonarHologram),
+    loadImage("/assets/images/jelly/j2.jpeg").then(convertToSonarHologram),
+    loadImage("/assets/images/jelly/j3.jpeg").then(convertToSonarHologram)
   ]);
   
   const maskCanvas = document.createElement("canvas");
