@@ -219,7 +219,7 @@ async function initOpeningCanvas() {
   resize();
 
   // We load the base AI generated image to use as our "map" for the ASCII art
-  const baseImg = await loadImage("{{ '/assets/images/pixel/hallway.jpeg' | relative_url }}");
+  const baseImg = await loadImage("/assets/images/pixel/hallway.jpeg");
   
   const scenery = new RetroScenery();
   let lastTime = performance.now() / 1000;
