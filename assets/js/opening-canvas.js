@@ -1,7 +1,7 @@
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;
-const CHAR_WIDTH = 6.5;
-const CHAR_HEIGHT = 10;
+const CHAR_WIDTH = 4;
+const CHAR_HEIGHT = 6;
 const COLS = Math.floor(LOGICAL_WIDTH / CHAR_WIDTH);
 const ROWS = Math.floor(LOGICAL_HEIGHT / CHAR_HEIGHT);
 
@@ -20,12 +20,10 @@ function loadImage(src) {
   });
 }
 
-// 密度映射：从 最暗（高密度） -> 最亮（低密度/空白）
-// 原理是深色区域用大面积覆盖的字符，浅色区域用点阵或者留白
-const DENSE_CHARS = "█▓▒MW@8#%*o+=~-:.  ";
-const DENSE_LEN = DENSE_CHARS.length - 1;
+// Map brightness to structure density. Darker = denser characters.
+const DENSE_CHARS = "█▓▒M%W8#=o*-:.  ";
 
-// 会产生流动的字符集合（用于紫色的天空/云彩）
+// Animated characters for the "floating/shimmering" parts like the sky
 const SHIMMER_CHARS = ["*", "+", "=", "~", "x", "-", "."];
 
 async function initOpeningCanvas() {
@@ -48,13 +46,11 @@ async function initOpeningCanvas() {
   window.addEventListener("resize", resize);
   resize();
 
-  // Load the AI-generated Pixel Art Image
-  // Using an absolute path or the known working path
-  const imgUrl = `/assets/images/pixel/hallway.jpeg${ASSET_VERSION}`;
+  // Load the newly perfectly mapped landscape reference image
+  const imgUrl = `/assets/images/pixel/original_hallway.png${ASSET_VERSION}`;
   const baseImg = await loadImage(imgUrl);
   
-  // 1. 将图像绘制到离屏的微型画布，大小精确等于我们屏幕能装下的字符数
-  // 这相当于对原图进行了完美的像素化（Pixelation）与网格化
+  // 1. Offscreen processing canvas
   const offCanvas = document.createElement("canvas");
   offCanvas.width = COLS;
   offCanvas.height = ROWS;
@@ -62,8 +58,18 @@ async function initOpeningCanvas() {
   offCtx.drawImage(baseImg, 0, 0, COLS, ROWS);
   const imgData = offCtx.getImageData(0, 0, COLS, ROWS).data;
   
-  // 2. 预先解析所有格子数据（极大提升性能，不需要每秒计算60次全图颜色）
-  const cells = [];
+  // 2. Pre-bake static elements (Walls, Doors, Windows, solid clouds)
+  // This gives the immense performance boost while preserving intricate resolution
+  const staticCanvas = document.createElement("canvas");
+  staticCanvas.width = LOGICAL_WIDTH;
+  staticCanvas.height = LOGICAL_HEIGHT;
+  const sCtx = staticCanvas.getContext("2d", { alpha: false });
+  sCtx.fillStyle = "#ffffff"; 
+  sCtx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+  sCtx.font = 'bold 6px "SF Mono", Menlo, Consolas, monospace';
+  sCtx.textBaseline = "top";
+  
+  const dynamicCells = [];
   
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
@@ -74,81 +80,62 @@ async function initOpeningCanvas() {
       
       const luma = 0.299 * r + 0.587 * g + 0.114 * b;
       
-      // 检测是否为天空/云朵色（偏蓝紫，Luma 中高）
-      // 这里根据原图的色调来进行粗略过滤
-      const isSky = (b > g * 1.1) && (luma > 80 && luma < 240);
+      // True Whitespace: The pure bright clouds
+      if (luma > 230 && r > 230 && g > 230 && b > 230) {
+          continue; // Leave blank (white)
+      }
       
-      // 检测是否为纯白色的云层
-      const isCloudWhite = (r > 240 && g > 240 && b > 240);
+      // Is it the purple/blue sky or water? 
+      // The original has high blue/purple content in the sky and ceiling ocean
+      const isSky = (b > g + 10) && (luma > 50 && luma < 210);
       
-      // 增强对比度和色彩饱和度，让像素风更加 Vaporwave
-      const boost = isSky ? 1.2 : 1.05;
-      const finalR = Math.min(255, Math.floor(r * boost));
-      const finalG = Math.min(255, Math.floor(g * boost));
-      const finalB = Math.min(255, Math.floor(b * (isSky ? 1.4 : boost)));
-
-      cells.push({
-        x, y, 
-        r: finalR, 
-        g: finalG, 
-        b: finalB,
-        luma,
-        isSky,
-        isCloudWhite
-      });
+      // 3. Selection of dynamic vs static
+      // We randomly pick ~85% of the sky cells to shimmer, the rest are static for stability
+      if (isSky && Math.random() > 0.15) {
+        dynamicCells.push({ x, y, r, g, b });
+      } else {
+        // Draw static structure (Doors, wall textures, outlines)
+        // Map luma strictly to density char
+        let dIdx = Math.floor((luma / 255) * DENSE_CHARS.length);
+        dIdx = Math.max(0, Math.min(DENSE_CHARS.length - 1, dIdx));
+        const char = DENSE_CHARS[dIdx];
+        
+        if (char !== " ") {
+            sCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            sCtx.fillText(char, x * CHAR_WIDTH, y * CHAR_HEIGHT);
+        }
+      }
     }
   }
 
-  let lastTime = performance.now() / 1000;
-  
   const renderFrame = (now) => {
     const time = now / 1000;
-    lastTime = time;
     
-    // Fill pure white background
+    // Clear back to white
     ctx.fillStyle = "#ffffff"; 
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
-    ctx.font = 'bold 10px "SF Mono", Menlo, Consolas, monospace';
-    ctx.textBaseline = "top";
-    
-    // Slow breathing perspective zoom (subtle, doesn't destroy the image)
+    // Infinite Zoom effect (Gentle depth breathing to feel alive)
     ctx.save();
-    const scale = 1.0 + Math.sin(time * 0.4) * 0.015; 
+    const scale = 1.0 + Math.sin(time * 0.25) * 0.015; 
     ctx.translate(LOGICAL_WIDTH/2, LOGICAL_HEIGHT/2);
     ctx.scale(scale, scale);
     ctx.translate(-LOGICAL_WIDTH/2, -LOGICAL_HEIGHT/2);
     
-    for (const cell of cells) {
-        let char = " ";
+    // 4. Paint the highly detailed static layout (the firm structure)
+    ctx.drawImage(staticCanvas, 0, 0);
+    
+    // 5. Paint the animated characters (the shimmering sky/water)
+    ctx.font = 'bold 6px "SF Mono", Menlo, Consolas, monospace';
+    ctx.textBaseline = "top";
+    
+    for (const cell of dynamicCells) {
+        // Wave shifts characters sequentially across the sky array
+        const wave = Math.floor(time * 8 + cell.x * 0.1 + cell.y * 0.05);
+        const char = SHIMMER_CHARS[Math.abs(wave) % SHIMMER_CHARS.length];
         
-        // 核心逻辑 1：有疏有密的层次感
-        // 极其明亮的区域（白云/强光）直接留白
-        if (cell.luma > 245) {
-            char = " ";
-        } 
-        // 极暗的区域（门框/深邃阴影）用密集的方块填充，保证物体的结构和轮廓清晰可见
-        else if (cell.luma < 40) {
-            char = "█";
-        } 
-        // 核心逻辑 2：截选一部分作为活动的字符（紫色的天空）
-        else if (cell.isSky) {
-            // 通过时间流逝和正弦波，让天空的波点看起来像云彩一样流动
-            const wave = Math.floor(time * 8 + cell.x * 0.1 + cell.y * 0.15);
-            char = SHIMMER_CHARS[Math.abs(wave) % SHIMMER_CHARS.length];
-        } 
-        // 其他普通的中间色调（门、墙壁、窗户等）
-        else {
-            // 根据亮度映射出固定的疏密字符
-            const dIdx = Math.floor((cell.luma / 255) * DENSE_LEN);
-            char = DENSE_CHARS[dIdx];
-        }
-        
-        // 只绘制有内容的字符，跳过空白提高性能
-        if (char !== " ") {
-            ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`;
-            ctx.fillText(char, cell.x * CHAR_WIDTH, cell.y * CHAR_HEIGHT);
-        }
+        ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`;
+        ctx.fillText(char, cell.x * CHAR_WIDTH, cell.y * CHAR_HEIGHT);
     }
     
     ctx.restore();
