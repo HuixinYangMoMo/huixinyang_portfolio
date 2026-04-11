@@ -1,10 +1,8 @@
-import { prepareWithSegments, layoutNextLine } from "@chenglou/pretext";
-
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;
-const LINE_HEIGHT = 16;
-const FONT = '10.5px "SF Mono", Menlo, Consolas, monospace';
-const MIN_SLOT_WIDTH = 50; 
+const LINE_HEIGHT = 14;
+const FONT = '10px "SF Mono", Menlo, Consolas, monospace';
+const MIN_SLOT_WIDTH = 20; 
 const MASK_SCALE = 0.25; 
 
 const ASSET_VERSION =
@@ -19,14 +17,9 @@ const FRAME_SETS = {
 };
 
 // --------------------------------------------------------
-// 1. Data & Text Configuration
+// 1. Data & Text Configuration (Continuous Flow Stream)
 // --------------------------------------------------------
-const TEXT_1 = `[ ENCRYPTED_STREAM_01: BIO_SYSTEMS ]\nOrganism exhibits pronounced glowing behavior when disturbed. The bell diameter ranges from 40-60cm, characterized by transparent hues. Observation of propulsion mechanisms reveals a highly efficient jet-like cycle. Energy expenditure is minimal. Trailing tentacles span up to 3 meters, lined with microscopic stinging cells for capturing zooplankton.\n[ FLUID DYNAMICS ]\nBy expanding and contracting its coronal bell, the entity creates localized vortex rings. This method of locomotion minimizes drag and allows for sustained suspension in high-pressure abyssal zones.\n\n`.repeat(50);
-
-const TEXT_2 = `[ SYS_OVERRIDE_ACTIVE ]\nINITIATING DATA STREAM ANALYSIS...\nSubject demonstrates anomalous regenerative capabilities. Cellular structure remains stable under extreme pressure. Recommended for further extraction and synthesis.\n[ NEURAL MAPPING ]\nUnlike centralized nervous systems, this organism utilizes a distributed nerve net. Instantaneous reflexive responses to hydrodynamic shifts are achieved via sub-millisecond signal propagation. Sensory organs located at the bell margin detect light, gravity, and chemical signatures.\n\n`.repeat(50);
-
-const PREP_1 = prepareWithSegments(TEXT_1, FONT, { whiteSpace: 'pre-wrap' });
-const PREP_2 = prepareWithSegments(TEXT_2, FONT, { whiteSpace: 'pre-wrap' });
+const TEXT_STREAM = `[ BIO_DATA: SCYPHOZOA ] Organism exhibits pronounced glowing behavior when disturbed. Bell diameter ranges from 40-60cm, characterized by transparent hues. Observation of propulsion mechanisms reveals a highly efficient jet-like cycle. Energy expenditure is minimal. Trailing tentacles span up to 3 meters, lined with microscopic stinging cells.      [ NEURAL MAPPING ] Unlike centralized nervous systems, this organism utilizes a distributed nerve net. Instantaneous reflexive responses to hydrodynamic shifts are achieved via sub-millisecond signal propagation. Sensory organs located at the bell margin detect light, gravity, and chemical signatures.      [ SYSTEM_OVERRIDE_ACTIVE ] INITIATING DATA STREAM ANALYSIS... Subject demonstrates anomalous regenerative capabilities. Cellular structure remains stable under extreme pressure. Recommended for further extraction and synthesis.      `.repeat(10);
 
 // --------------------------------------------------------
 // 2. High-Performance Image Filter & Loader
@@ -41,7 +34,7 @@ function loadImage(src) {
   });
 }
 
-function convertToRadarHologram(img) {
+function convertToThermalHologram(img) {
   const canvas = document.createElement("canvas");
   const w = img.width || img.naturalWidth || 960;
   const h = img.height || img.naturalHeight || 960;
@@ -62,27 +55,28 @@ function convertToRadarHologram(img) {
       
       if (luma < 15) { data[i+3] = 0; continue; }
 
-      // Pure Cyan & Neon Green Palette (No Yellow/Red)
-      if (luma > 160) { 
-        data[i] = 57; data[i+1] = 255; data[i+2] = 20; // Neon Green Core
+      // Pure Blue-Green Tone Palette (No Yellow)
+      if (luma > 180) { 
+        data[i] = 100; data[i+1] = 255; data[i+2] = 200; // Bright Cyan-Green Core
       } else if (luma > 80) { 
-        data[i] = 0; data[i+1] = 243; data[i+2] = 255; // Bright Cyan
+        data[i] = 0; data[i+1] = 200; data[i+2] = 150;   // Deep Emerald Green
       } else { 
-        data[i] = 0; data[i+1] = 100; data[i+2] = 200; // Deep Blue edges
+        data[i] = 0; data[i+1] = 100; data[i+2] = 200;   // Dark Blue/Cyan edges
       }
       
-      // Point cloud noise filtering (deterministic, very fast)
-      // Only apply noise to darker areas to preserve the glowing core
-      if (luma < 160) {
-        const noise = ((x * 1973 + y * 9277) % 100);
-        if (noise > (luma * 0.8)) {
-          data[i+3] = 0; 
-          continue; 
-        }
+      // Structural Point Cloud & Transparency logic
+      const isGrid = (x % 3 === 0) && (y % 3 === 0);
+      let alpha = 0;
+      
+      if (luma > 180) {
+        alpha = 255; // Solid core tissue
+      } else if (luma > 80) {
+        alpha = isGrid ? 200 : 80; // Mesh body
+      } else {
+        alpha = isGrid ? 150 : 0; // Highly transparent bell (water), dots only
       }
       
-      // Soft ethereal transparency
-      data[i+3] = Math.min(255, luma * 1.5);
+      data[i+3] = Math.min(255, alpha);
     }
   }
   ctx.putImageData(imgData, 0, 0);
@@ -105,10 +99,9 @@ async function loadFrameSet(baseUrl) {
   const manifest = await response.json();
   const processedFrames = [];
   
-  // Background load with glow baked in
   const loadPromises = manifest.frames.map(frameName => 
     loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`).then(img => {
-      const baseHolo = convertToRadarHologram(img);
+      const baseHolo = convertToThermalHologram(img);
       return { 
         canvas: baseHolo,
         glowCanvas: bakeGlow(baseHolo, 12) 
@@ -141,7 +134,8 @@ function getBlockedRangesForY(maskData, mw, mh, y, logicalWidth, padding) {
     const offset = my * mw * 4;
     for (let mx = 0; mx < mw; mx++) {
         const alpha = maskData[offset + mx * 4 + 3];
-        if (alpha > 15) {
+        // Threshold controls how tight the text hugs the jellyfish
+        if (alpha > 20) {
             if (!inBlock) {
                 inBlock = true;
                 startX = mx;
@@ -210,12 +204,12 @@ class AnimatedJelly {
   
   update(time) {
     const t = time * this.speed + this.phase;
-    // Smooth circular orbit
-    this.x = this.centerX + Math.sin(t) * this.radius;
-    this.y = this.centerY + Math.cos(t * 0.8) * this.radius * 0.7; 
+    // Circular orbit
+    this.x = this.centerX + Math.cos(t) * this.radius;
+    this.y = this.centerY + Math.sin(t) * this.radius * 0.8; 
     
-    this.vx = Math.cos(t) * this.radius * this.speed;
-    this.vy = -Math.sin(t * 0.8) * this.radius * this.speed * 0.7;
+    this.vx = -Math.sin(t);
+    this.vy = Math.cos(t) * 0.8;
   }
 
   getCurrentFrame(time) {
@@ -257,21 +251,21 @@ class AnimatedJelly {
     ctx.drawImage(frame.glowCanvas, -this.width/2, -this.height/2, this.width, this.height);
     
     // Draw solid core
-    ctx.globalAlpha = this.opacity * 0.8;
+    ctx.globalAlpha = this.opacity * 0.85;
     ctx.drawImage(frame.canvas, -this.width/2, -this.height/2, this.width, this.height);
     
     ctx.restore();
   }
 }
 
-// Deep Sea Stars & Point Cloud Particles (Smooth)
+// Deep Sea Stars (Floating, NOT flashing)
 class DeepSeaStars {
   constructor() {
     this.stars = Array.from({length: 150}, () => ({
       x: Math.random() * LOGICAL_WIDTH,
       y: Math.random() * LOGICAL_HEIGHT,
-      size: Math.random() > 0.85 ? Math.random() * 3 + 1.5 : Math.random() * 1.5 + 0.5,
-      speedY: (Math.random() * -12) - 2,
+      size: Math.random() > 0.85 ? Math.random() * 3 + 1 : Math.random() * 1.5 + 0.5,
+      speedY: (Math.random() * -10) - 2,
       phase: Math.random() * Math.PI * 2,
     }));
   }
@@ -285,10 +279,11 @@ class DeepSeaStars {
     ctx.save();
     ctx.globalCompositeOperation = "screen";
     for (const star of this.stars) {
-      const alpha = (Math.sin(time + star.phase) + 1) / 2 * 0.4 + 0.2;
+      // Smooth breathing glow
+      const alpha = (Math.sin(time * 0.5 + star.phase) + 1) / 2 * 0.5 + 0.3;
       
       if (star.size > 2.5) {
-        ctx.fillStyle = `rgba(57, 255, 20, ${alpha})`; 
+        ctx.fillStyle = `rgba(57, 255, 20, ${alpha * 0.8})`; 
         ctx.shadowColor = "#39ff14";
         ctx.shadowBlur = 8;
         const fs = star.size * 3;
@@ -305,14 +300,14 @@ class DeepSeaStars {
   }
 }
 
-// Edge Flashing Terminals
-class FlashUI {
+// Edge Flashing Terminals (Fixed pos, flickering visibility)
+class StaticFlashUI {
   constructor() {
     this.elements = [
-      { x: LOGICAL_WIDTH - 250, y: 150, type: 'hud', w: 180, h: 60, interval: 2.5, duration: 0.3 },
-      { x: 150, y: 100, type: 'barcode', w: 100, h: 15, interval: 4.0, duration: 0.15 },
-      { x: LOGICAL_WIDTH - 200, y: LOGICAL_HEIGHT - 150, type: 'err', w: 100, h: 20, interval: 3.2, duration: 0.4 },
-      { x: 250, y: LOGICAL_HEIGHT - 200, type: 'reticle', w: 50, h: 50, interval: 5.0, duration: 0.8 }
+      { x: LOGICAL_WIDTH - 250, y: 80, type: 'hud', w: 180, h: 60, interval: 2.5, duration: 0.3 },
+      { x: 50, y: 100, type: 'barcode', w: 100, h: 15, interval: 4.0, duration: 0.15 },
+      { x: LOGICAL_WIDTH - 200, y: LOGICAL_HEIGHT - 100, type: 'err', w: 100, h: 20, interval: 3.2, duration: 0.4 },
+      { x: 100, y: LOGICAL_HEIGHT - 150, type: 'reticle', w: 50, h: 50, interval: 5.0, duration: 0.8 }
     ].map(e => ({ ...e, lastToggle: Math.random() * 5, visible: false }));
   }
   
@@ -330,8 +325,8 @@ class FlashUI {
   
   draw(ctx, time) {
     ctx.save();
-    ctx.fillStyle = "rgba(57, 255, 20, 0.85)";
-    ctx.strokeStyle = "rgba(57, 255, 20, 0.85)";
+    ctx.fillStyle = "rgba(57, 255, 20, 0.9)";
+    ctx.strokeStyle = "rgba(57, 255, 20, 0.9)";
     ctx.shadowColor = "#39ff14";
     ctx.shadowBlur = 6;
     ctx.lineWidth = 1.5;
@@ -366,27 +361,19 @@ class FlashUI {
         ctx.stroke();
       }
     }
+    
+    // Static Ruler (Always on)
+    ctx.beginPath();
+    const rightX = LOGICAL_WIDTH - 30;
+    ctx.moveTo(rightX, 200); ctx.lineTo(rightX, 600);
+    for(let i = 0; i <= 400; i += 20) {
+      ctx.moveTo(rightX, 200 + i); 
+      ctx.lineTo(rightX + (i % 100 === 0 ? 15 : 8), 200 + i);
+    }
+    ctx.stroke();
+    
     ctx.restore();
   }
-}
-
-function drawBackgroundNumbers(ctx, time) {
-  ctx.save();
-  ctx.globalAlpha = 0.04;
-  ctx.font = '280px monospace';
-  ctx.fillStyle = "#39ff14";
-  ctx.fillText("302", LOGICAL_WIDTH - 500, 300);
-  ctx.fillText("SYS", 100, LOGICAL_HEIGHT - 150);
-  
-  ctx.globalAlpha = 0.4;
-  ctx.font = '14px monospace';
-  for(let i=0; i<6; i++) {
-    const x = (LOGICAL_WIDTH * 0.2 * i + time * 30) % LOGICAL_WIDTH;
-    const y = LOGICAL_HEIGHT * 0.85 + Math.sin(time + i) * 60;
-    const val = (Math.sin(time*2 + i) * 1000000).toFixed(0);
-    ctx.fillText(`COORD [X:${val}]`, x, y);
-  }
-  ctx.restore();
 }
 
 // --------------------------------------------------------
@@ -428,17 +415,19 @@ async function initOpeningCanvas() {
   const CX = LOGICAL_WIDTH / 2;
   const CY = LOGICAL_HEIGHT / 2;
   const jellies = [
-    // Much smaller jellies, scattered around
-    new AnimatedJelly(cyanAnim, { scale: 0.35, centerX: CX - 150, centerY: CY + 100, radius: 120, speed: 0.3, phase: 0, opacity: 1.0, blur: 0 }),
-    new AnimatedJelly(pinkAnim, { scale: 0.28, centerX: CX + 200, centerY: CY - 100, radius: 150, speed: 0.35, phase: Math.PI * 0.8, opacity: 0.95, blur: 0 }),
-    new AnimatedJelly(violetAnim, { scale: 0.22, centerX: CX, centerY: CY + 200, radius: 100, speed: 0.45, phase: Math.PI * 1.5, opacity: 0.9, blur: 0 }),
-    // Blurred background giants (Depth)
-    new AnimatedJelly(cyanAnim, { scale: 0.4, centerX: CX - 200, centerY: CY - 150, radius: 80, speed: 0.15, phase: Math.PI, opacity: 0.5, blur: 8 }),
-    new AnimatedJelly(pinkAnim, { scale: 0.5, centerX: CX + 250, centerY: CY + 100, radius: 100, speed: 0.2, phase: Math.PI * 1.2, opacity: 0.6, blur: 12 })
+    // Scaled down significantly, spaced out in wider orbits
+    new AnimatedJelly(cyanAnim, { scale: 0.35, centerX: CX - 150, centerY: CY + 100, radius: 200, speed: 0.25, phase: 0, opacity: 1.0, blur: 0 }),
+    new AnimatedJelly(pinkAnim, { scale: 0.25, centerX: CX + 200, centerY: CY - 100, radius: 250, speed: 0.3, phase: Math.PI * 0.8, opacity: 0.95, blur: 0 }),
+    new AnimatedJelly(violetAnim, { scale: 0.18, centerX: CX, centerY: CY + 150, radius: 150, speed: 0.4, phase: Math.PI * 1.5, opacity: 0.9, blur: 0 }),
+    // Blurred background jellies (Depth)
+    new AnimatedJelly(cyanAnim, { scale: 0.25, centerX: CX - 250, centerY: CY - 150, radius: 100, speed: 0.15, phase: Math.PI, opacity: 0.5, blur: 6 })
   ];
 
   const starfield = new DeepSeaStars();
-  const flashUI = new FlashUI();
+  const staticUI = new StaticFlashUI();
+  
+  ctx.font = FONT;
+  const charWidth = ctx.measureText("A").width;
   
   let lastTime = performance.now() / 1000;
   
@@ -452,14 +441,6 @@ async function initOpeningCanvas() {
     ctx.fillStyle = "#01080a"; 
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
-    // Draw Background Grid slightly
-    ctx.strokeStyle = "rgba(0, 255, 100, 0.03)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 0; x < LOGICAL_WIDTH; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, LOGICAL_HEIGHT); }
-    for (let y = 0; y < LOGICAL_HEIGHT; y += 50) { ctx.moveTo(0, y); ctx.lineTo(LOGICAL_WIDTH, y); }
-    ctx.stroke();
-    
     starfield.update(dt, time);
     starfield.draw(ctx, time);
 
@@ -470,56 +451,28 @@ async function initOpeningCanvas() {
     for (const j of jellies) j.drawMask(maskCtx, time);
     const maskData = maskCtx.getImageData(0, 0, MW, MH).data;
     
-    // TEXT WRAPPING & LAYOUT (SMOOTH FLOW)
+    // =======================================
+    // CHARACTER STREAM LAYOUT (PERFECT FLOW, NO JITTER)
+    // =======================================
     ctx.font = FONT;
     ctx.textBaseline = "alphabetic";
     ctx.shadowBlur = 0;
     
-    const SCROLL_SPEED = 20; 
-    const totalScroll = time * SCROLL_SPEED;
-    const scrolledLines = Math.floor(totalScroll / LINE_HEIGHT);
-    const yOffset = totalScroll % LINE_HEIGHT;
+    const SCROLL_SPEED = 25; 
+    let globalIndex = Math.floor(time * SCROLL_SPEED);
 
-    let cur1 = { segmentIndex: 0, graphemeIndex: 0 };
-    for(let i=0; i < scrolledLines; i++) {
-        let l = layoutNextLine(PREP_1, cur1, 400);
-        if(l) cur1 = l.end; else { cur1 = { segmentIndex: 0, graphemeIndex: 0 }; layoutNextLine(PREP_1, cur1, 400); }
-    }
-    
-    let cur2 = { segmentIndex: 0, graphemeIndex: 0 };
-    for(let i=0; i < scrolledLines; i++) {
-        let l = layoutNextLine(PREP_2, cur2, 400);
-        if(l) cur2 = l.end; else { cur2 = { segmentIndex: 0, graphemeIndex: 0 }; layoutNextLine(PREP_2, cur2, 400); }
-    }
-    
-    for (let baselineY = -40 - yOffset; baselineY <= LOGICAL_HEIGHT + 60; baselineY += LINE_HEIGHT) {
-      const blocked = getBlockedRangesForY(maskData, MW, MH, baselineY - LINE_HEIGHT * 0.5, LOGICAL_WIDTH, 14); 
+    for (let baselineY = 40; baselineY <= LOGICAL_HEIGHT - 40; baselineY += LINE_HEIGHT) {
+      const blocked = getBlockedRangesForY(maskData, MW, MH, baselineY - LINE_HEIGHT * 0.4, LOGICAL_WIDTH, 14); 
+      const slots = subtractRanges(60, LOGICAL_WIDTH - 60, blocked);
       
-      // Column 1 (Left Area)
-      const slots1 = subtractRanges(80, LOGICAL_WIDTH / 2 - 40, blocked);
-      for (const slot of slots1) {
-        const slotWidth = slot.end - slot.start;
-        let line = layoutNextLine(PREP_1, cur1, slotWidth);
-        if (!line) { cur1 = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(PREP_1, cur1, slotWidth); }
-        if (line) {
-          if (line.start.segmentIndex === line.end.segmentIndex && line.start.graphemeIndex === line.end.graphemeIndex) continue;
-          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.65)";
-          ctx.fillText(line.text.trim(), slot.start, baselineY);
-          cur1 = line.end;
-        }
-      }
-
-      // Column 2 (Right Area)
-      const slots2 = subtractRanges(LOGICAL_WIDTH / 2 + 40, LOGICAL_WIDTH - 80, blocked);
-      for (const slot of slots2) {
-        const slotWidth = slot.end - slot.start;
-        let line = layoutNextLine(PREP_2, cur2, slotWidth);
-        if (!line) { cur2 = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(PREP_2, cur2, slotWidth); }
-        if (line) {
-          if (line.start.segmentIndex === line.end.segmentIndex && line.start.graphemeIndex === line.end.graphemeIndex) continue;
-          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.65)";
-          ctx.fillText(line.text.trim(), slot.start, baselineY);
-          cur2 = line.end;
+      for (const slot of slots) {
+        let x = slot.start;
+        while (x + charWidth <= slot.end) {
+            const char = TEXT_STREAM[globalIndex % TEXT_STREAM.length];
+            ctx.fillStyle = (char === "[" || char === "]") ? "#39ff14" : "rgba(0, 243, 255, 0.7)";
+            ctx.fillText(char, x, baselineY);
+            x += charWidth;
+            globalIndex++;
         }
       }
     }
@@ -530,9 +483,9 @@ async function initOpeningCanvas() {
       j.draw(ctx, time);
     }
     
-    drawBackgroundNumbers(ctx, time);
-    flashUI.update(time);
-    flashUI.draw(ctx, time);
+    // Top Layer - Flashing UI
+    staticUI.update(time);
+    staticUI.draw(ctx, time);
     
     requestAnimationFrame(renderFrame);
   };
