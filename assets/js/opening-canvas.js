@@ -1,10 +1,10 @@
-import { prepareWithSegments, layoutNextLine } from "@chenglou/pretext";
+import { prepareWithSegments, layoutNextLine } from "{{ '/assets/libs/layout.js' | relative_url }}";
 
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;
-const LINE_HEIGHT = 14;
-const FONT = '10px "SF Mono", Menlo, Consolas, monospace';
-const MIN_SLOT_WIDTH = 40; 
+const LINE_HEIGHT = 16;
+const FONT = '10.5px "SF Mono", Menlo, Consolas, monospace';
+const MIN_SLOT_WIDTH = 50; 
 const MASK_SCALE = 0.25; 
 
 const ASSET_VERSION =
@@ -19,9 +19,10 @@ const FRAME_SETS = {
 };
 
 // --------------------------------------------------------
-// 1. Text Data
+// 1. Data & Text Configuration
 // --------------------------------------------------------
 const TEXT_1 = `[ ENCRYPTED_STREAM_01: BIO_SYSTEMS ]\nOrganism exhibits pronounced glowing behavior when disturbed. The bell diameter ranges from 40-60cm, characterized by transparent hues. Observation of propulsion mechanisms reveals a highly efficient jet-like cycle. Energy expenditure is minimal. Trailing tentacles span up to 3 meters, lined with microscopic stinging cells for capturing zooplankton.\n[ FLUID DYNAMICS ]\nBy expanding and contracting its coronal bell, the entity creates localized vortex rings. This method of locomotion minimizes drag and allows for sustained suspension in high-pressure abyssal zones.\n\n`.repeat(50);
+
 const TEXT_2 = `[ SYS_OVERRIDE_ACTIVE ]\nINITIATING DATA STREAM ANALYSIS...\nSubject demonstrates anomalous regenerative capabilities. Cellular structure remains stable under extreme pressure. Recommended for further extraction and synthesis.\n[ NEURAL MAPPING ]\nUnlike centralized nervous systems, this organism utilizes a distributed nerve net. Instantaneous reflexive responses to hydrodynamic shifts are achieved via sub-millisecond signal propagation. Sensory organs located at the bell margin detect light, gravity, and chemical signatures.\n\n`.repeat(50);
 
 const PREP_1 = prepareWithSegments(TEXT_1, FONT, { whiteSpace: 'pre-wrap' });
@@ -54,28 +55,21 @@ function convertToThermalHologram(img) {
   for (let i = 0, y = 0; y < h; y++) {
     for (let x = 0; x < w; x++, i += 4) {
       const a = data[i+3];
-      if (a < 15) { data[i+3] = 0; continue; }
+      if (a < 10) { data[i+3] = 0; continue; }
       
       const r = data[i], g = data[i+1], b = data[i+2];
       const luma = (r + g + b) / 3;
       
-      // Deterministic spatial noise for point cloud effect (No Math.random = fast!)
-      const noise = ((x * 1973 + y * 9277) % 100);
-      
-      if (noise > luma * 0.9) {
-        data[i+3] = 0; 
-        continue; 
-      }
-      
-      // Thermal Palette
+      // Thermal Palette (Smooth mapping, NO random noise/stop-motion artifact)
       if (luma > 180) { 
-        data[i] = 255; data[i+1] = 255; data[i+2] = 50; 
-      } else if (luma > 100) { 
-        data[i] = 57; data[i+1] = 255; data[i+2] = 20;
+        data[i] = 255; data[i+1] = 255; data[i+2] = 100; // Bright yellow/white core
+      } else if (luma > 90) { 
+        data[i] = 57; data[i+1] = 255; data[i+2] = 20;   // Neon green
       } else { 
-        data[i] = 0; data[i+1] = 180; data[i+2] = 255; 
+        data[i] = 0; data[i+1] = 180; data[i+2] = 255;   // Deep cyan fringes
       }
-      data[i+3] = Math.min(255, luma * 1.5);
+      // Make it slightly more transparent at dark parts for that dreamy look
+      data[i+3] = Math.min(255, luma * 1.8);
     }
   }
   ctx.putImageData(imgData, 0, 0);
@@ -120,7 +114,7 @@ function getBlockedRangesForY(maskData, mw, mh, y, logicalWidth, padding) {
     const offset = my * mw * 4;
     for (let mx = 0; mx < mw; mx++) {
         const alpha = maskData[offset + mx * 4 + 3];
-        if (alpha > 15) {
+        if (alpha > 20) {
             if (!inBlock) {
                 inBlock = true;
                 startX = mx;
@@ -171,14 +165,14 @@ class AnimatedJelly {
     this.width = animData.naturalWidth * config.scale;
     this.height = animData.naturalHeight * config.scale;
     
-    this.centerX = config.x;
-    this.centerY = config.y;
+    this.centerX = config.centerX;
+    this.centerY = config.centerY;
     this.radius = config.radius;
     this.speed = config.speed;
     this.phase = config.phase;
     
     this.opacity = config.opacity || 1.0;
-    this.blur = config.blur || 0;
+    this.blur = config.blur || 0; // For depth of field
     
     this.x = 0;
     this.y = 0;
@@ -188,13 +182,14 @@ class AnimatedJelly {
   }
   
   update(time) {
+    // Pure circular orbit
     const t = time * this.speed + this.phase;
-    // Elegant sweeping curve
-    this.x = this.centerX + Math.sin(t) * this.radius;
-    this.y = this.centerY + Math.cos(t * 0.8) * this.radius * 0.8; 
+    this.x = this.centerX + Math.cos(t) * this.radius;
+    this.y = this.centerY + Math.sin(t) * this.radius;
     
-    this.vx = Math.cos(t) * this.radius * this.speed;
-    this.vy = -Math.sin(t * 0.8) * this.radius * this.speed * 0.8;
+    // Velocity vectors for rotation (tangent to circle)
+    this.vx = -Math.sin(t);
+    this.vy = Math.cos(t);
   }
 
   getCurrentFrame(time) {
@@ -213,7 +208,9 @@ class AnimatedJelly {
     ctx.translate(this.x * MASK_SCALE, this.y * MASK_SCALE);
     const angle = Math.atan2(this.vy, this.vx);
     ctx.rotate(angle + Math.PI / 2);
-    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05); // Breath/sway
+    
+    // Minimal sway for smooth mask
+    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05); 
     
     ctx.globalCompositeOperation = 'source-over';
     ctx.drawImage(frame.canvas, (-this.width/2) * MASK_SCALE, (-this.height/2) * MASK_SCALE, this.width * MASK_SCALE, this.height * MASK_SCALE);
@@ -228,26 +225,31 @@ class AnimatedJelly {
     ctx.translate(this.x, this.y);
     const angle = Math.atan2(this.vy, this.vx);
     ctx.rotate(angle + Math.PI / 2); 
-    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05);
+    ctx.rotate(Math.sin(time * 1.5 + this.phase) * 0.05); // Smooth breathing
     
+    // 1. Draw base jelly
     ctx.globalAlpha = this.opacity;
     ctx.globalCompositeOperation = "screen";
     if (this.blur > 0) ctx.filter = `blur(${this.blur}px)`;
-    
     ctx.drawImage(frame.canvas, -this.width/2, -this.height/2, this.width, this.height);
+    
+    // 2. Draw Bloom (柔光滤镜 / Soft Glow) on top for the dreamy effect
+    ctx.globalAlpha = this.opacity * 0.7; // Brighten the glow
+    ctx.filter = `blur(${this.blur + 15}px) saturate(150%)`; // Heavy blur for the halo
+    ctx.drawImage(frame.canvas, -this.width/2, -this.height/2, this.width, this.height);
+    
     ctx.restore();
   }
 }
 
-// Background Starfield & Coordinates
+// Smooth background stars/particles (No flickering, just smooth floating)
 class DeepSeaStars {
   constructor() {
-    this.stars = Array.from({length: 150}, () => ({
+    this.stars = Array.from({length: 120}, () => ({
       x: Math.random() * LOGICAL_WIDTH,
       y: Math.random() * LOGICAL_HEIGHT,
-      size: Math.random() > 0.85 ? Math.random() * 3 + 2 : Math.random() * 1.5 + 0.5,
-      speedY: (Math.random() * -15) - 5,
-      blinkSpeed: Math.random() * 2 + 1,
+      size: Math.random() > 0.85 ? Math.random() * 3 + 1.5 : Math.random() * 1.5 + 0.5,
+      speedY: (Math.random() * -12) - 2,
       phase: Math.random() * Math.PI * 2,
     }));
   }
@@ -261,115 +263,93 @@ class DeepSeaStars {
     ctx.save();
     ctx.globalCompositeOperation = "screen";
     for (const star of this.stars) {
-      const alpha = (Math.sin(time * star.blinkSpeed + star.phase) + 1) / 2 * 0.7 + 0.1;
-      ctx.fillStyle = `rgba(0, 243, 255, ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(star.x, star.y, star.size * 0.8, 0, Math.PI*2);
-      ctx.fill();
+      // Smooth breathing glow instead of sharp flickering
+      const alpha = (Math.sin(time + star.phase) + 1) / 2 * 0.5 + 0.3;
       
       if (star.size > 2.5) {
-        ctx.fillStyle = `rgba(57, 255, 20, ${alpha * 0.8})`; 
+        // Crosshair stars
+        ctx.fillStyle = `rgba(57, 255, 20, ${alpha})`; 
         ctx.shadowColor = "#39ff14";
-        ctx.shadowBlur = 4;
-        const flareSize = star.size * 5;
-        ctx.fillRect(star.x - flareSize, star.y - 0.5, flareSize * 2, 1);
-        ctx.fillRect(star.x - 0.5, star.y - flareSize, 1, flareSize * 2);
+        ctx.shadowBlur = 8;
+        const fs = star.size * 3;
+        ctx.fillRect(star.x - fs, star.y - 0.5, fs * 2, 1);
+        ctx.fillRect(star.x - 0.5, star.y - fs, 1, fs * 2);
+        // Center core
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha + 0.2})`;
+        ctx.beginPath(); ctx.arc(star.x, star.y, star.size*0.5, 0, Math.PI*2); ctx.fill();
+      } else {
+        // Round dust
+        ctx.fillStyle = `rgba(0, 243, 255, ${alpha})`;
+        ctx.beginPath(); ctx.arc(star.x, star.y, star.size, 0, Math.PI*2); ctx.fill();
       }
     }
     ctx.restore();
   }
 }
 
-// Static Edge UI Overlays (Flickering, Fixed on Top)
-class StaticTerminalUI {
+// Flashing Overlays (Only UI elements flash at fixed locations)
+class FlashUI {
+  constructor() {
+    this.elements = [
+      { x: LOGICAL_WIDTH - 250, y: 150, type: 'hud', w: 180, h: 60, interval: 2.5, duration: 0.3 },
+      { x: 150, y: 100, type: 'barcode', w: 100, h: 15, interval: 4.0, duration: 0.15 },
+      { x: LOGICAL_WIDTH - 200, y: LOGICAL_HEIGHT - 150, type: 'err', w: 100, h: 20, interval: 3.2, duration: 0.4 },
+      { x: 300, y: LOGICAL_HEIGHT - 200, type: 'reticle', w: 50, h: 50, interval: 5.0, duration: 0.8 }
+    ].map(e => ({ ...e, lastToggle: Math.random() * 5, visible: false }));
+  }
+  
+  update(time) {
+    for (const el of this.elements) {
+      if (el.visible && time - el.lastToggle > el.duration) {
+        el.visible = false;
+        el.lastToggle = time;
+      } else if (!el.visible && time - el.lastToggle > el.interval) {
+        el.visible = true;
+        el.lastToggle = time;
+      }
+    }
+  }
+  
   draw(ctx, time) {
     ctx.save();
-    ctx.strokeStyle = "#39ff14";
-    ctx.fillStyle = "#39ff14";
+    ctx.fillStyle = "rgba(57, 255, 20, 0.85)";
+    ctx.strokeStyle = "rgba(57, 255, 20, 0.85)";
     ctx.shadowColor = "#39ff14";
-    ctx.shadowBlur = 2;
-    ctx.lineWidth = 1;
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 1.5;
     
-    // Top Left: Systems Monitor (Flickers fast)
-    if (Math.random() > 0.15) {
-      ctx.font = '10px monospace';
-      ctx.fillText("[ OVR.SYS.99 ]", 40, 50);
-      ctx.fillText(`MEM: ${(Math.random() * 99).toFixed(1)}%`, 40, 65);
-      // Small barcode
-      let bx = 40;
-      for(let i=0; i<15; i++) {
-        const w = Math.random() * 4 + 1;
-        ctx.fillRect(bx, 75, w, 10);
-        bx += w + 2;
+    for (const el of this.elements) {
+      if (!el.visible) continue;
+      
+      if (el.type === 'hud') {
+        ctx.strokeRect(el.x, el.y, el.w, el.h);
+        ctx.fillRect(el.x, el.y, 20, 5);
+        ctx.fillRect(el.x + el.w - 20, el.y + el.h - 5, 20, 5);
+        ctx.font = '12px monospace';
+        ctx.fillText("TARGET AQ", el.x + 10, el.y + 20);
+        ctx.fillText(`LVL: ${(Math.random()*100).toFixed(2)}`, el.x + 10, el.y + 40);
+      } else if (el.type === 'barcode') {
+        let cx = el.x;
+        while (cx < el.x + el.w) {
+          const bw = Math.random() * 6 + 1;
+          ctx.fillRect(cx, el.y, bw, el.h);
+          cx += bw + 3;
+        }
+      } else if (el.type === 'err') {
+        ctx.font = '14px monospace';
+        ctx.fillText(`ERR_${Math.random().toString(16).substr(2, 6).toUpperCase()}`, el.x, el.y);
+      } else if (el.type === 'reticle') {
+        ctx.beginPath();
+        ctx.arc(el.x, el.y, el.w/2, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(el.x - el.w, el.y); ctx.lineTo(el.x + el.w, el.y);
+        ctx.moveTo(el.x, el.y - el.w); ctx.lineTo(el.x, el.y + el.w);
+        ctx.stroke();
       }
     }
-
-    // Top Right: Target Box (Flickers slow)
-    if (Math.sin(time * 5) > -0.8) {
-      ctx.beginPath();
-      ctx.moveTo(LOGICAL_WIDTH - 150, 40); ctx.lineTo(LOGICAL_WIDTH - 170, 40); ctx.lineTo(LOGICAL_WIDTH - 170, 60);
-      ctx.moveTo(LOGICAL_WIDTH - 40, 40); ctx.lineTo(LOGICAL_WIDTH - 20, 40); ctx.lineTo(LOGICAL_WIDTH - 20, 60);
-      ctx.moveTo(LOGICAL_WIDTH - 170, 100); ctx.lineTo(LOGICAL_WIDTH - 170, 120); ctx.lineTo(LOGICAL_WIDTH - 150, 120);
-      ctx.moveTo(LOGICAL_WIDTH - 20, 100); ctx.lineTo(LOGICAL_WIDTH - 20, 120); ctx.lineTo(LOGICAL_WIDTH - 40, 120);
-      ctx.stroke();
-      ctx.fillText("TARGET.AQ", LOGICAL_WIDTH - 120, 85);
-    }
-    
-    // Right Edge: Vertical Ruler
-    ctx.beginPath();
-    const rightX = LOGICAL_WIDTH - 30;
-    ctx.moveTo(rightX, 200); ctx.lineTo(rightX, 600);
-    for(let i = 0; i <= 400; i += 20) {
-      ctx.moveTo(rightX, 200 + i); 
-      ctx.lineTo(rightX + (i % 100 === 0 ? 15 : 8), 200 + i);
-    }
-    ctx.stroke();
-
-    // Bottom Left: Data Stream Status
-    if (Math.random() > 0.05) {
-      ctx.fillText("DATA STREAM INTACT", 40, LOGICAL_HEIGHT - 60);
-      ctx.fillRect(40, LOGICAL_HEIGHT - 50, 100 * (0.5 + Math.sin(time*2)*0.5), 4);
-      ctx.strokeStyle = "rgba(57, 255, 20, 0.4)";
-      ctx.strokeRect(40, LOGICAL_HEIGHT - 50, 100, 4);
-    }
-
-    // Bottom Right: Err Codes
-    if (Math.random() > 0.3) {
-      const errCode = Math.random().toString(16).substr(2, 8).toUpperCase();
-      ctx.fillStyle = "rgba(0, 243, 255, 0.9)"; // Cyan error
-      ctx.fillText(`ERR_${errCode}`, LOGICAL_WIDTH - 150, LOGICAL_HEIGHT - 50);
-    }
-
-    // Top Edge / Bottom Edge Grid Crosshairs
-    ctx.strokeStyle = "rgba(0, 255, 150, 0.3)";
-    ctx.beginPath();
-    for (let x = 100; x < LOGICAL_WIDTH; x += 200) {
-      ctx.moveTo(x, 10); ctx.lineTo(x, 25);
-      ctx.moveTo(x, LOGICAL_HEIGHT - 25); ctx.lineTo(x, LOGICAL_HEIGHT - 10);
-    }
-    ctx.stroke();
-
     ctx.restore();
   }
-}
-
-function drawBackgroundNumbers(ctx, time) {
-  ctx.save();
-  ctx.globalAlpha = 0.04;
-  ctx.font = '280px monospace';
-  ctx.fillStyle = "#39ff14";
-  ctx.fillText("302", LOGICAL_WIDTH - 500, 300);
-  ctx.fillText("SYS", 100, LOGICAL_HEIGHT - 150);
-  
-  ctx.globalAlpha = 0.4;
-  ctx.font = '14px monospace';
-  for(let i=0; i<6; i++) {
-    const x = (LOGICAL_WIDTH * 0.2 * i + time * 30) % LOGICAL_WIDTH;
-    const y = LOGICAL_HEIGHT * 0.85 + Math.sin(time + i) * 60;
-    const val = (Math.sin(time*2 + i) * 1000000).toFixed(0);
-    ctx.fillText(`COORD [X:${val}]`, x, y);
-  }
-  ctx.restore();
 }
 
 // --------------------------------------------------------
@@ -409,17 +389,22 @@ async function initOpeningCanvas() {
   maskCanvas.height = MH;
   const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
   
+  // Jellies Setup: Different sizes, orbiting a central point
+  const CX = LOGICAL_WIDTH / 2;
+  const CY = LOGICAL_HEIGHT / 2;
   const jellies = [
-    // Sharp Foreground Jellies (Collide with text)
-    new AnimatedJelly(cyanAnim, { scale: 0.65, x: LOGICAL_WIDTH * 0.35, y: LOGICAL_HEIGHT * 0.5, radius: 150, speed: 0.4, phase: 0, opacity: 1.0, blur: 0 }),
-    new AnimatedJelly(pinkAnim, { scale: 0.55, x: LOGICAL_WIDTH * 0.75, y: LOGICAL_HEIGHT * 0.45, radius: 180, speed: 0.35, phase: Math.PI, opacity: 0.95, blur: 0 }),
-    // Blurred Background Jellies (Ignore text collision)
-    new AnimatedJelly(violetAnim, { scale: 0.4, x: LOGICAL_WIDTH * 0.8, y: LOGICAL_HEIGHT * 0.25, radius: 90, speed: 0.2, phase: Math.PI/2, opacity: 0.5, blur: 5 }),
-    new AnimatedJelly(cyanAnim, { scale: 0.45, x: LOGICAL_WIDTH * 0.2, y: LOGICAL_HEIGHT * 0.2, radius: 100, speed: 0.25, phase: Math.PI*1.5, opacity: 0.4, blur: 8 })
+    // Huge foreground jelly
+    new AnimatedJelly(cyanAnim, { scale: 0.8, centerX: CX, centerY: CY, radius: 240, speed: 0.25, phase: 0, opacity: 1.0, blur: 0 }),
+    // Medium midground jelly
+    new AnimatedJelly(pinkAnim, { scale: 0.55, centerX: CX, centerY: CY, radius: 360, speed: 0.35, phase: Math.PI * 0.8, opacity: 0.9, blur: 0 }),
+    // Small foreground jelly
+    new AnimatedJelly(violetAnim, { scale: 0.35, centerX: CX, centerY: CY, radius: 150, speed: 0.45, phase: Math.PI * 1.5, opacity: 0.95, blur: 0 }),
+    // Blurred background giant
+    new AnimatedJelly(cyanAnim, { scale: 0.9, centerX: CX, centerY: CY, radius: 100, speed: 0.15, phase: Math.PI, opacity: 0.5, blur: 12 })
   ];
 
   const starfield = new DeepSeaStars();
-  const staticUI = new StaticTerminalUI();
+  const flashUI = new FlashUI();
   
   let lastTime = performance.now() / 1000;
   
@@ -428,12 +413,19 @@ async function initOpeningCanvas() {
     const dt = time - lastTime;
     lastTime = time;
     
-    // Clear & Base
+    // Clear & Base dark background
     ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
-    ctx.fillStyle = "#02080a"; // Very dark cyan/navy
+    ctx.fillStyle = "#01080a"; 
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
-    drawBackgroundNumbers(ctx, time);
+    // Draw Background Grid slightly
+    ctx.strokeStyle = "rgba(0, 255, 100, 0.03)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < LOGICAL_WIDTH; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, LOGICAL_HEIGHT); }
+    for (let y = 0; y < LOGICAL_HEIGHT; y += 50) { ctx.moveTo(0, y); ctx.lineTo(LOGICAL_WIDTH, y); }
+    ctx.stroke();
+    
     starfield.update(dt, time);
     starfield.draw(ctx, time);
 
@@ -447,12 +439,13 @@ async function initOpeningCanvas() {
     const maskData = maskCtx.getImageData(0, 0, MW, MH).data;
     
     // =======================================
-    // TEXT WRAPPING & LAYOUT
+    // TEXT WRAPPING & LAYOUT (SMOOTH FLOW)
     // =======================================
     ctx.font = FONT;
     ctx.textBaseline = "alphabetic";
+    ctx.shadowBlur = 0; // No shadow for sharp text
     
-    const SCROLL_SPEED = 22; 
+    const SCROLL_SPEED = 25; 
     const totalScroll = time * SCROLL_SPEED;
     const scrolledLines = Math.floor(totalScroll / LINE_HEIGHT);
     const yOffset = totalScroll % LINE_HEIGHT;
@@ -468,12 +461,8 @@ async function initOpeningCanvas() {
         let l = layoutNextLine(PREP_2, cur2, 400);
         if(l) cur2 = l.end; else { cur2 = { segmentIndex: 0, graphemeIndex: 0 }; layoutNextLine(PREP_2, cur2, 400); }
     }
-
-    ctx.shadowColor = "#00f3ff";
-    ctx.shadowBlur = 2;
     
     for (let baselineY = -40 - yOffset; baselineY <= LOGICAL_HEIGHT + 60; baselineY += LINE_HEIGHT) {
-      
       // Calculate blocked regions for this row using the scaled mask
       const blocked = getBlockedRangesForY(maskData, MW, MH, baselineY - LINE_HEIGHT * 0.5, LOGICAL_WIDTH, 14); 
       
@@ -485,7 +474,7 @@ async function initOpeningCanvas() {
         if (!line) { cur1 = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(PREP_1, cur1, slotWidth); }
         if (line) {
           if (line.start.segmentIndex === line.end.segmentIndex && line.start.graphemeIndex === line.end.graphemeIndex) continue;
-          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.7)";
+          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.65)";
           ctx.fillText(line.text.trim(), slot.start, baselineY);
           cur1 = line.end;
         }
@@ -499,22 +488,22 @@ async function initOpeningCanvas() {
         if (!line) { cur2 = { segmentIndex: 0, graphemeIndex: 0 }; line = layoutNextLine(PREP_2, cur2, slotWidth); }
         if (line) {
           if (line.start.segmentIndex === line.end.segmentIndex && line.start.graphemeIndex === line.end.graphemeIndex) continue;
-          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.7)";
+          ctx.fillStyle = line.text.includes("[") ? "#39ff14" : "rgba(0, 243, 255, 0.65)";
           ctx.fillText(line.text.trim(), slot.start, baselineY);
           cur2 = line.end;
         }
       }
     }
-    ctx.shadowBlur = 0; // Reset
     
-    // Foreground Layer - Jellies
+    // Foreground Layer - Jellies (Soft Glow / Bloom pass applied inside draw)
     const sortedJellies = [...jellies].sort((a, b) => b.blur - a.blur);
     for (const j of sortedJellies) {
       j.draw(ctx, time);
     }
     
-    // Render Static Top-Level UI Elements
-    staticUI.draw(ctx, time);
+    // Top Layer - Flashing UI
+    flashUI.update(time);
+    flashUI.draw(ctx, time);
     
     requestAnimationFrame(renderFrame);
   };
