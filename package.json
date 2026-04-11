@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@chenglou/pretext": "^0.0.5",
-    "puppeteer": "^24.40.0"
+    "puppeteer": "^24.40.0",
+    "wavespeed": "^0.2.3"
   }
 }
