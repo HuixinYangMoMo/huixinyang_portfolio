@@ -1,4 +1,4 @@
-import { prepareWithSegments, layoutNextLine } from "{{ '/assets/vendor/pretext/layout.js' | relative_url }}";
+import { prepareWithSegments, layoutNextLine } from "{{ '/assets/libs/pretext/layout.js' | relative_url }}";
 
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;

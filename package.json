@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@chenglou/pretext": "^0.0.5"
+    "@chenglou/pretext": "^0.0.5",
+    "puppeteer": "^24.40.0"
   }
 }
