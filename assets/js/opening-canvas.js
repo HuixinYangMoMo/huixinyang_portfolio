@@ -1,6 +1,6 @@
 const LOGICAL_WIDTH = 1440;
 const LOGICAL_HEIGHT = 900;
-const CHAR_WIDTH = 8;
+const CHAR_WIDTH = 6.5;
 const CHAR_HEIGHT = 10;
 const COLS = Math.floor(LOGICAL_WIDTH / CHAR_WIDTH);
 const ROWS = Math.floor(LOGICAL_HEIGHT / CHAR_HEIGHT);
@@ -9,9 +9,6 @@ const ASSET_VERSION =
   typeof window !== "undefined" && window.__OPENING_ASSET_VERSION__
     ? `?v=${window.__OPENING_ASSET_VERSION__}`
     : "";
-
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*()_+~-=/[]{}|:;<>,.? ";
-const DENSITY_CHARS = " .:-=+*#%@";
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -23,185 +20,18 @@ function loadImage(src) {
   });
 }
 
-function processImageToASCII(img) {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  
-  // We scale the image down to exactly the number of columns and rows
-  // This means 1 pixel in this mini-canvas represents 1 character slot
-  canvas.width = COLS;
-  canvas.height = ROWS;
-  
-  // Draw scaled image
-  ctx.drawImage(img, 0, 0, COLS, ROWS);
-  const imgData = ctx.getImageData(0, 0, COLS, ROWS).data;
-  
-  const asciiData = [];
-  
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      const idx = (y * COLS + x) * 4;
-      const r = imgData[idx];
-      const g = imgData[idx+1];
-      const b = imgData[idx+2];
-      
-      const luma = (r + g + b) / 3;
-      
-      // Determine brightness character
-      const charIdx = Math.floor((luma / 255) * (DENSITY_CHARS.length - 1));
-      let char = DENSITY_CHARS[charIdx];
-      
-      // Add a bit of Matrix-style random data for mid-tones to make it feel "active"
-      if (luma > 80 && luma < 180 && Math.random() > 0.8) {
-         char = CHARS[Math.floor(Math.random() * CHARS.length)];
-      }
+// 密度映射：从 最暗（高密度） -> 最亮（低密度/空白）
+// 原理是深色区域用大面积覆盖的字符，浅色区域用点阵或者留白
+const DENSE_CHARS = "█▓▒MW@8#%*o+=~-:.  ";
+const DENSE_LEN = DENSE_CHARS.length - 1;
 
-      asciiData.push({
-        char: char,
-        color: `rgb(${r}, ${g}, ${b})`,
-        luma: luma,
-        r, g, b
-      });
-    }
-  }
-  
-  return asciiData;
-}
-
-// --------------------------------------------------------
-// Background Stars & Moving Clouds
-// --------------------------------------------------------
-class RetroScenery {
-  constructor() {
-    this.timeOffset = 0;
-    this.clouds = Array.from({length: 8}, () => ({
-      x: Math.random() * COLS,
-      y: Math.random() * ROWS,
-      speed: Math.random() * 2 + 0.5,
-      scale: Math.random() * 2 + 1
-    }));
-  }
-  
-  update(dt) {
-    this.timeOffset += dt;
-    for (const c of this.clouds) {
-      c.x -= c.speed * dt * 5;
-      if (c.x < -20) c.x = COLS + 20;
-    }
-  }
-}
-
-// --------------------------------------------------------
-// Tunnel / Infinite Corridor Generator
-// --------------------------------------------------------
-function drawInfiniteCorridor(ctx, time, scenery) {
-    ctx.font = 'bold 10px monospace';
-    ctx.textBaseline = "top";
-    
-    // Calculate perspective center with a slight sway
-    const cx = COLS / 2 + Math.sin(time) * 10;
-    const cy = ROWS / 2 + Math.cos(time * 0.8) * 5;
-
-    // Draw frame by frame character grid
-    for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
-            
-            // Vector from center
-            const dx = x - cx;
-            const dy = y - cy;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            
-            // Distance determines "depth" in the tunnel
-            // We use modulo to create repeating wall segments (the "infinite" effect)
-            let depth = (100 / (dist + 0.1)); 
-            let wallSegment = (depth * 10 + time * 15) % 20;
-            
-            let char = " ";
-            let color = "#000";
-            
-            // Sky & Clouds in the center (where distance is very small)
-            if (dist < 15) {
-                char = ".";
-                color = "#d6b4fc"; // Purple sky
-                
-                // Add clouds
-                for (const c of scenery.clouds) {
-                    const cdist = Math.abs(x - (c.x/COLS)*30 - cx) + Math.abs(y - (c.y/ROWS)*30 - cy);
-                    if (cdist < c.scale * 3) {
-                        char = "#";
-                        color = "#fff";
-                    }
-                }
-            } 
-            // The Walls / Ceiling / Floor
-            else {
-                // Determine which wall we're on based on angle
-                const angle = Math.atan2(dy, dx);
-                const pi = Math.PI;
-                
-                let isWall = false;
-                let isWindow = false;
-                
-                // Segment borders (frames of the doors/windows)
-                if (wallSegment < 2 || wallSegment > 18) {
-                    char = "+";
-                    color = "#8b5a2b"; // Wood brown
-                    isWall = true;
-                } else {
-                    // Windows on the side walls
-                    if ((angle > -pi/4 && angle < pi/4) || (angle > 3*pi/4 || angle < -3*pi/4)) {
-                        // Side walls
-                        if (wallSegment > 6 && wallSegment < 14 && Math.abs(dy) < dist * 0.5) {
-                            // Window glass
-                            char = "~";
-                            color = "#a4b5f0"; // Glass blue/purple
-                            isWindow = true;
-                        } else {
-                            char = "|";
-                            color = "#c7b1e8"; // Pale purple wall
-                            isWall = true;
-                        }
-                    } 
-                    // Floor and Ceiling
-                    else {
-                        if (dy > 0) { // Floor
-                            char = (x % 4 === 0 && y % 4 === 0) ? "." : "_";
-                            color = "#e8e4f8"; // Light floor
-                        } else { // Ceiling
-                            char = "=";
-                            color = "#b29dd6"; // Darker ceiling
-                        }
-                    }
-                }
-                
-                // Add shading based on depth (further is darker)
-                if (isWall || isWindow) {
-                    const shade = Math.max(0, 1 - (dist / (COLS/2)));
-                    // We modify the lightness of the color manually for a retro feel
-                    // For simplicity in this demo, we just rely on character density
-                    if (shade < 0.3) char = ".";
-                    else if (shade < 0.6) char = ":";
-                }
-            }
-            
-            // Random glitching on walls
-            if (dist > 15 && Math.random() > 0.995) {
-                char = CHARS[Math.floor(Math.random() * CHARS.length)];
-                color = "#39ff14"; // Matrix green glitch
-            }
-            
-            if (char !== " ") {
-                ctx.fillStyle = color;
-                ctx.fillText(char, x * CHAR_WIDTH, y * CHAR_HEIGHT);
-            }
-        }
-    }
-}
+// 会产生流动的字符集合（用于紫色的天空/云彩）
+const SHIMMER_CHARS = ["*", "+", "=", "~", "x", "-", "."];
 
 async function initOpeningCanvas() {
   const canvas = document.querySelector("[data-opening-canvas]");
   if (!canvas) return;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { alpha: false });
   
   const resize = () => {
     const dpr = window.devicePixelRatio || 1;
@@ -218,77 +48,110 @@ async function initOpeningCanvas() {
   window.addEventListener("resize", resize);
   resize();
 
-  // We load the base AI generated image to use as our "map" for the ASCII art
-  const baseImg = await loadImage("/assets/images/pixel/hallway.jpeg");
+  // Load the AI-generated Pixel Art Image
+  // Using an absolute path or the known working path
+  const imgUrl = `/assets/images/pixel/hallway.jpeg${ASSET_VERSION}`;
+  const baseImg = await loadImage(imgUrl);
   
-  const scenery = new RetroScenery();
+  // 1. 将图像绘制到离屏的微型画布，大小精确等于我们屏幕能装下的字符数
+  // 这相当于对原图进行了完美的像素化（Pixelation）与网格化
+  const offCanvas = document.createElement("canvas");
+  offCanvas.width = COLS;
+  offCanvas.height = ROWS;
+  const offCtx = offCanvas.getContext("2d", { willReadFrequently: true });
+  offCtx.drawImage(baseImg, 0, 0, COLS, ROWS);
+  const imgData = offCtx.getImageData(0, 0, COLS, ROWS).data;
+  
+  // 2. 预先解析所有格子数据（极大提升性能，不需要每秒计算60次全图颜色）
+  const cells = [];
+  
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      const idx = (y * COLS + x) * 4;
+      const r = imgData[idx];
+      const g = imgData[idx + 1];
+      const b = imgData[idx + 2];
+      
+      const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+      
+      // 检测是否为天空/云朵色（偏蓝紫，Luma 中高）
+      // 这里根据原图的色调来进行粗略过滤
+      const isSky = (b > g * 1.1) && (luma > 80 && luma < 240);
+      
+      // 检测是否为纯白色的云层
+      const isCloudWhite = (r > 240 && g > 240 && b > 240);
+      
+      // 增强对比度和色彩饱和度，让像素风更加 Vaporwave
+      const boost = isSky ? 1.2 : 1.05;
+      const finalR = Math.min(255, Math.floor(r * boost));
+      const finalG = Math.min(255, Math.floor(g * boost));
+      const finalB = Math.min(255, Math.floor(b * (isSky ? 1.4 : boost)));
+
+      cells.push({
+        x, y, 
+        r: finalR, 
+        g: finalG, 
+        b: finalB,
+        luma,
+        isSky,
+        isCloudWhite
+      });
+    }
+  }
+
   let lastTime = performance.now() / 1000;
-  
-  // We process the image once to get its color map, but we'll distort it live
-  const originalAscii = processImageToASCII(baseImg);
   
   const renderFrame = (now) => {
     const time = now / 1000;
-    const dt = time - lastTime;
     lastTime = time;
     
-    // Fill background
+    // Fill pure white background
     ctx.fillStyle = "#ffffff"; 
     ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
     
-    ctx.font = 'bold 10px "SF Mono", monospace';
+    ctx.font = 'bold 10px "SF Mono", Menlo, Consolas, monospace';
     ctx.textBaseline = "top";
     
-    // Instead of drawing the math corridor, we use the AI image as the layout, 
-    // and apply a wave distortion and character cycling to make it "alive".
+    // Slow breathing perspective zoom (subtle, doesn't destroy the image)
+    ctx.save();
+    const scale = 1.0 + Math.sin(time * 0.4) * 0.015; 
+    ctx.translate(LOGICAL_WIDTH/2, LOGICAL_HEIGHT/2);
+    ctx.scale(scale, scale);
+    ctx.translate(-LOGICAL_WIDTH/2, -LOGICAL_HEIGHT/2);
     
-    let i = 0;
-    for (let y = 0; y < ROWS; y++) {
-      for (let x = 0; x < COLS; x++) {
-        const data = originalAscii[i];
-        i++;
+    for (const cell of cells) {
+        let char = " ";
         
-        // Depth distortion (simulating moving forward through the hallway)
-        // We calculate distance from center
-        const dx = (x - COLS/2) / COLS;
-        const dy = (y - ROWS/2) / ROWS;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        
-        // Skip purely white/empty areas
-        if (data.luma > 240) continue;
-        
-        let char = data.char;
-        let color = data.color;
-        
-        // Animate the characters (The "Pixel 波点" effect)
-        // Lighter areas shift characters faster to look like clouds/sky
-        if (data.luma > 150) {
-            if (Math.sin(time * 5 + x * 0.1 + y * 0.1) > 0.5) {
-                char = DENSITY_CHARS[Math.floor((data.luma/255) * DENSITY_CHARS.length * Math.random())] || ".";
-            }
+        // 核心逻辑 1：有疏有密的层次感
+        // 极其明亮的区域（白云/强光）直接留白
+        if (cell.luma > 245) {
+            char = " ";
+        } 
+        // 极暗的区域（门框/深邃阴影）用密集的方块填充，保证物体的结构和轮廓清晰可见
+        else if (cell.luma < 40) {
+            char = "█";
+        } 
+        // 核心逻辑 2：截选一部分作为活动的字符（紫色的天空）
+        else if (cell.isSky) {
+            // 通过时间流逝和正弦波，让天空的波点看起来像云彩一样流动
+            const wave = Math.floor(time * 8 + cell.x * 0.1 + cell.y * 0.15);
+            char = SHIMMER_CHARS[Math.abs(wave) % SHIMMER_CHARS.length];
+        } 
+        // 其他普通的中间色调（门、墙壁、窗户等）
+        else {
+            // 根据亮度映射出固定的疏密字符
+            const dIdx = Math.floor((cell.luma / 255) * DENSE_LEN);
+            char = DENSE_CHARS[dIdx];
         }
         
-        // The structural walls shift characters based on perspective movement
-        if (dist > 0.2) { // Walls/Doors
-            const speed = 20 * dist; // Closer to edges moves faster
-            const shift = Math.floor(time * speed + dist * 10) % 2;
-            if (shift === 0 && data.luma < 100) {
-                char = ["#", "M", "W", "8", "@"][Math.floor(Math.random() * 5)];
-            }
+        // 只绘制有内容的字符，跳过空白提高性能
+        if (char !== " ") {
+            ctx.fillStyle = `rgb(${cell.r}, ${cell.g}, ${cell.b})`;
+            ctx.fillText(char, cell.x * CHAR_WIDTH, cell.y * CHAR_HEIGHT);
         }
-        
-        // Zoom/Wave effect
-        const zoom = 1 + (time % 1) * 0.1 * dist; // Continuous slight zoom
-        const renderX = COLS/2 + dx * COLS * zoom;
-        const renderY = ROWS/2 + dy * ROWS * zoom;
-        
-        if (renderX >= 0 && renderX < COLS && renderY >= 0 && renderY < ROWS) {
-            ctx.fillStyle = color;
-            ctx.fillText(char, renderX * CHAR_WIDTH, renderY * CHAR_HEIGHT);
-        }
-      }
     }
     
+    ctx.restore();
     requestAnimationFrame(renderFrame);
   };
   
