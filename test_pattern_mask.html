@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html><body>
+<canvas id="c" width="1440" height="900"></canvas>
+<script>
+  const COLS = 288;
+  const ROWS = 150;
+  const CW = 5;
+  const CH = 6;
+  const CHARS = ".*+-=~oX";
+  
+  const patternFrames = [];
+  for (let i = 0; i < 4; i++) {
+    const cv = document.createElement("canvas");
+    cv.width = 1440; cv.height = 900;
+    const cx = cv.getContext("2d");
+    cx.fillStyle = "#000";
+    cx.font = 'bold 8px monospace';
+    cx.textBaseline = "top";
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        cx.fillText(CHARS[Math.floor(Math.random() * CHARS.length)], x * CW, y * CH);
+      }
+    }
+    patternFrames.push(cv);
+  }
+  
+  const t0 = performance.now();
+  // Drawing using pre-rendered frame
+  const skyCv = document.createElement("canvas"); skyCv.width = 1440; skyCv.height = 900;
+  const sCtx = skyCv.getContext("2d");
+  
+  sCtx.drawImage(patternFrames[0], 0, 0);
+  sCtx.globalCompositeOperation = "source-in";
+  // draw bgImg here
+  // sCtx.drawImage(bgImg, 0, 0);
+  
+  const t1 = performance.now();
+  console.log("Time with pre-rendered:", t1 - t0, "ms");
+</script>
+</body></html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html><body>
+<canvas id="c" width="1440" height="900"></canvas>
+<script>
+  const ctx = document.getElementById('c').getContext('2d');
+  
+  // Fake bgImg and fgImg
+  const bgImg = document.createElement("canvas"); bgImg.width=1440; bgImg.height=900;
+  const bc = bgImg.getContext("2d"); bc.fillStyle = "purple"; bc.fillRect(0,0,1440,900);
+  
+  const fgImg = document.createElement("canvas"); fgImg.width=1440; fgImg.height=900;
+  const fc = fgImg.getContext("2d"); fc.fillStyle = "brown"; fc.fillRect(500,200,400,500);
+
+  const t0 = performance.now();
+  
+  // Render
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, 1440, 900);
+  
+  const COLS = 180;
+  const ROWS = 112;
+  const CW = 8;
+  const CH = 8;
+  
+  // Offscreen for sky
+  const skyCv = document.createElement("canvas"); skyCv.width=1440; skyCv.height=900;
+  const sCtx = skyCv.getContext("2d");
+  
+  sCtx.fillStyle = "#000";
+  sCtx.font = "8px monospace";
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      sCtx.fillText("X", x*CW, y*CH+8);
+    }
+  }
+  
+  sCtx.globalCompositeOperation = "source-in";
+  sCtx.drawImage(bgImg, 0, 0, 1440, 900);
+  
+  ctx.drawImage(skyCv, 0, 0);
+  ctx.drawImage(fgImg, 0, 0);
+
+  const t1 = performance.now();
+  console.log("Time:", t1 - t0, "ms");
+</script>
+</body></html>
