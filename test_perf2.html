@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html><body>
+<canvas id="m" width="360" height="225"></canvas>
+<script>
+  const ctx = document.getElementById('m').getContext('2d', { willReadFrequently: true });
+  
+  const t0 = performance.now();
+  const data = ctx.getImageData(0, 0, 360, 225).data;
+  const t1 = performance.now();
+  
+  let blocked = 0;
+  const MW = 360;
+  const MH = 225;
+  for (let y = 0; y < 900; y += 16) {
+    const my = Math.floor((y - 8) * 0.25);
+    if (my < 0 || my >= MH) continue;
+    const offset = my * MW * 4;
+    for (let mx = 0; mx < MW; mx++) {
+      if (data[offset + mx * 4 + 3] > 10) blocked++;
+    }
+  }
+  const t2 = performance.now();
+  console.log('getImageData:', t1 - t0, 'ms');
+  console.log('getBlockedRangesForY:', t2 - t1, 'ms');
+</script>
+</body></html>

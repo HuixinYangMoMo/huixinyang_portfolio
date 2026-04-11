@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="c" width="1440" height="900"></canvas>
+<script type="importmap">
+  {
+    "imports": {
+      "@chenglou/pretext": "/assets/libs/layout.js"
+    }
+  }
+</script>
+<script type="module">
+import { prepareWithSegments, layoutNextLine } from "@chenglou/pretext";
+
+const TEXT_1 = `[ ENCRYPTED_STREAM_01: BIO_SYSTEMS ]\nOrganism exhibits pronounced glowing behavior when disturbed. The bell diameter ranges from 40-60cm, characterized by transparent hues. Observation of propulsion mechanisms reveals a highly efficient jet-like cycle. Energy expenditure is minimal. Trailing tentacles span up to 3 meters, lined with microscopic stinging cells for capturing zooplankton.\n[ FLUID DYNAMICS ]\nBy expanding and contracting its coronal bell, the entity creates localized vortex rings. This method of locomotion minimizes drag and allows for sustained suspension in high-pressure abyssal zones.\n\n`.repeat(50);
+const PREP_1 = prepareWithSegments(TEXT_1, '10px monospace', { whiteSpace: 'pre-wrap' });
+
+const t0 = performance.now();
+let cur1 = { segmentIndex: 0, graphemeIndex: 0 };
+for (let i = 0; i < 60; i++) {
+  for (let j = 0; j < 3; j++) {
+    const l = layoutNextLine(PREP_1, cur1, 200);
+    if (l) cur1 = l.end;
+  }
+}
+const t1 = performance.now();
+console.log('layoutNextLine took', t1 - t0, 'ms');
+</script>
+</body>
+</html>

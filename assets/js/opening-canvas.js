@@ -60,7 +60,14 @@ function convertToThermalHologram(img) {
       const r = data[i], g = data[i+1], b = data[i+2];
       const luma = (r + g + b) / 3;
       
-      // Thermal Palette (Smooth mapping, NO random noise/stop-motion artifact)
+      // Point cloud noise filtering (deterministic, very fast)
+      const noise = ((x * 1973 + y * 9277) % 100);
+      if (noise > luma) {
+        data[i+3] = 0; 
+        continue; 
+      }
+      
+      // Thermal Palette
       if (luma > 180) { 
         data[i] = 255; data[i+1] = 255; data[i+2] = 100; // Bright yellow/white core
       } else if (luma > 90) { 
@@ -68,12 +75,24 @@ function convertToThermalHologram(img) {
       } else { 
         data[i] = 0; data[i+1] = 180; data[i+2] = 255;   // Deep cyan fringes
       }
-      // Make it slightly more transparent at dark parts for that dreamy look
-      data[i+3] = Math.min(255, luma * 1.8);
+      
+      // Smooth ethereal transparency
+      data[i+3] = Math.min(255, luma * 1.5);
     }
   }
   ctx.putImageData(imgData, 0, 0);
   return canvas;
+}
+
+// Bakes a heavily blurred version of a canvas for soft glowing
+function bakeGlow(canvas, blurRadius) {
+  const glowCanvas = document.createElement("canvas");
+  glowCanvas.width = canvas.width;
+  glowCanvas.height = canvas.height;
+  const ctx = glowCanvas.getContext("2d");
+  ctx.filter = `blur(${blurRadius}px) saturate(150%)`;
+  ctx.drawImage(canvas, 0, 0);
+  return glowCanvas;
 }
 
 async function loadFrameSet(baseUrl) {
@@ -82,10 +101,14 @@ async function loadFrameSet(baseUrl) {
   const manifest = await response.json();
   const processedFrames = [];
   
-  // Background load
+  // Background load with glow baked in
   const loadPromises = manifest.frames.map(frameName => 
     loadImage(`${baseUrl}/${frameName}${ASSET_VERSION}`).then(img => {
-      return { canvas: convertToThermalHologram(img) };
+      const baseHolo = convertToThermalHologram(img);
+      return { 
+        canvas: baseHolo,
+        glowCanvas: bakeGlow(baseHolo, 12) 
+      };
     })
   );
   
@@ -231,11 +254,12 @@ class AnimatedJelly {
     ctx.globalAlpha = this.opacity;
     ctx.globalCompositeOperation = "screen";
     if (this.blur > 0) ctx.filter = `blur(${this.blur}px)`;
-    ctx.drawImage(frame.canvas, -this.width/2, -this.height/2, this.width, this.height);
     
-    // 2. Draw Bloom (柔光滤镜 / Soft Glow) on top for the dreamy effect
-    ctx.globalAlpha = this.opacity * 0.7; // Brighten the glow
-    ctx.filter = `blur(${this.blur + 15}px) saturate(150%)`; // Heavy blur for the halo
+    // Pre-baked glow layer! Highly performant, extremely dreamy.
+    ctx.drawImage(frame.glowCanvas, -this.width/2, -this.height/2, this.width, this.height);
+    
+    // Core sharp layer
+    ctx.globalAlpha = this.opacity * 0.8;
     ctx.drawImage(frame.canvas, -this.width/2, -this.height/2, this.width, this.height);
     
     ctx.restore();
@@ -393,14 +417,14 @@ async function initOpeningCanvas() {
   const CX = LOGICAL_WIDTH / 2;
   const CY = LOGICAL_HEIGHT / 2;
   const jellies = [
-    // Huge foreground jelly
-    new AnimatedJelly(cyanAnim, { scale: 0.8, centerX: CX, centerY: CY, radius: 240, speed: 0.25, phase: 0, opacity: 1.0, blur: 0 }),
-    // Medium midground jelly
-    new AnimatedJelly(pinkAnim, { scale: 0.55, centerX: CX, centerY: CY, radius: 360, speed: 0.35, phase: Math.PI * 0.8, opacity: 0.9, blur: 0 }),
-    // Small foreground jelly
-    new AnimatedJelly(violetAnim, { scale: 0.35, centerX: CX, centerY: CY, radius: 150, speed: 0.45, phase: Math.PI * 1.5, opacity: 0.95, blur: 0 }),
-    // Blurred background giant
-    new AnimatedJelly(cyanAnim, { scale: 0.9, centerX: CX, centerY: CY, radius: 100, speed: 0.15, phase: Math.PI, opacity: 0.5, blur: 12 })
+    // Big foreground jelly (Orbital path 1)
+    new AnimatedJelly(cyanAnim, { scale: 0.45, centerX: CX, centerY: CY, radius: 240, speed: 0.25, phase: 0, opacity: 1.0, blur: 0 }),
+    // Medium foreground jelly (Orbital path 2)
+    new AnimatedJelly(pinkAnim, { scale: 0.35, centerX: CX - 100, centerY: CY, radius: 180, speed: 0.35, phase: Math.PI * 0.8, opacity: 0.9, blur: 0 }),
+    // Small foreground jelly (Orbital path 3)
+    new AnimatedJelly(violetAnim, { scale: 0.25, centerX: CX + 150, centerY: CY - 50, radius: 150, speed: 0.45, phase: Math.PI * 1.5, opacity: 0.95, blur: 0 }),
+    // Blurred background giants (Depth)
+    new AnimatedJelly(cyanAnim, { scale: 0.6, centerX: CX, centerY: CY, radius: 100, speed: 0.15, phase: Math.PI, opacity: 0.5, blur: 6 })
   ];
 
   const starfield = new DeepSeaStars();
