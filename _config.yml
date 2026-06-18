@@ -1,7 +1,7 @@
 title: 杨慧鑫
 description: 广告美术 | 品牌视觉 | AIGC 视觉方向持续实践
-baseurl: ""
-url: "https://huixinyangmomo.github.io/huixinyang_portfolio"
+baseurl: "/huixinyang_portfolio"
+url: "https://huixinyangmomo.github.io"
 lang: zh-CN
 timezone: Asia/Shanghai
 markdown: kramdown
