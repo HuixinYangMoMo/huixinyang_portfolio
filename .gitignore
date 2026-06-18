@@ -61,4 +61,4 @@ _site/
 ###########
 .bundle/
 vendor/bundle
-Gemfile.lock
+# Gemfile.lock
