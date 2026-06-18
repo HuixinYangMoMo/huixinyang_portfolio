@@ -1,0 +1,286 @@
+{
+  "generated_for": "brand logo/icon collection",
+  "items": [
+    {
+      "slug": "meituan",
+      "brand": "美团",
+      "file": "meituan.png",
+      "page": "https://www.meituan.com/media",
+      "download_url": "https://p0.meituan.net/smartvenus/23aa5bf14ba72125bf4bab96bd17894f174907.png",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "官方媒体资源页；图标用官方域名当前 favicon",
+      "bytes": 81223
+    },
+    {
+      "slug": "mcdonalds",
+      "brand": "麦当劳",
+      "file": "mcdonalds.jpg",
+      "page": "https://www.mcdonalds.com/",
+      "download_url": "https://www.mcdonalds.com/content/dam/sites/usa/nfl/icons/arches-logo_108x108.jpg",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "官方网站当前 favicon",
+      "bytes": 3228
+    },
+    {
+      "slug": "pizzahut",
+      "brand": "必胜客",
+      "file": "pizzahut.png",
+      "page": "https://www.pizzahut.com/",
+      "download_url": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pizzahut.com&size=512",
+      "source_kind": "Google favicon 服务按官方域名抓取当前站点图标",
+      "note": "官方网站当前 favicon",
+      "bytes": 244
+    },
+    {
+      "slug": "starbucks",
+      "brand": "星巴克",
+      "file": "starbucks.png",
+      "page": "https://www.starbucks.com/",
+      "download_url": "https://www.starbucks.com/next_static/icons/summary_square.png",
+      "source_kind": "官网 OG 图片",
+      "note": "官方网站当前 favicon",
+      "bytes": 72848
+    },
+    {
+      "slug": "yili",
+      "brand": "伊利",
+      "file": "yili.svg",
+      "page": "https://cdnlogo.com/logo/yili_188951.html",
+      "download_url": "https://static.cdnlogo.com/logos/y/40/yili.svg",
+      "source_kind": "第三方公开 SVG 素材库",
+      "note": "伊利官网脚本抓取失败；使用 CDNLogo 上标注官网的 SVG，商业使用前建议复核授权",
+      "bytes": 18898
+    },
+    {
+      "slug": "genki_forest",
+      "brand": "元气森林",
+      "file": "genki_forest.svg",
+      "page": "https://www.yuanqisenlin.com/",
+      "download_url": "https://www.yuanqisenlin.com/favicon.svg",
+      "source_kind": "官网声明的 icon",
+      "note": "官方网站当前 favicon",
+      "bytes": 1849
+    },
+    {
+      "slug": "pepsi",
+      "brand": "百事可乐",
+      "file": "pepsi.png",
+      "page": "https://www.pepsi.com/",
+      "download_url": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pepsi.com&size=512",
+      "source_kind": "Google favicon 服务按官方域名抓取当前站点图标",
+      "note": "官方网站当前 favicon",
+      "bytes": 535
+    },
+    {
+      "slug": "laughing_cow",
+      "brand": "乐芝牛/乐之牛",
+      "file": "laughing_cow.png",
+      "page": "https://www.thelaughingcow.com/",
+      "download_url": "https://www.thelaughingcow.com/wp-content/themes/the-laughing-cow/resources/images/temp/logo-the-laughing-cow-small.png",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "按乐芝牛 The Laughing Cow 处理；官方网站当前 favicon",
+      "bytes": 11504
+    },
+    {
+      "slug": "chagee",
+      "brand": "霸王茶姬",
+      "file": "chagee.png",
+      "page": "https://chagee.com.sg/",
+      "download_url": "https://oss.chagee.com.sg/website2025/uploads/20240712/998f1cc8-c575-4463-9577-fe268aa01c22.png",
+      "source_kind": "官网 OG 图片",
+      "note": "官方网站当前 favicon",
+      "bytes": 21893
+    },
+    {
+      "slug": "jidong_shaoxiancao",
+      "brand": "悸动烧仙草",
+      "file": "jidong_shaoxiancao.png",
+      "page": "https://www.jidongsh.com/",
+      "download_url": "https://www.jidongsh.com/uploads/images/20241113/1731475817693884.png",
+      "source_kind": "官网 HTML 图片资源",
+      "note": "悸动官网顶部 logo 图片资源",
+      "bytes": 7209
+    },
+    {
+      "slug": "yulian_teahouse",
+      "brand": "玉莲/裕莲茶楼",
+      "file": "yulian_teahouse.jpg",
+      "page": "https://www.zcool.com.cn/work/ZNTc5ODkzNzI=.html",
+      "download_url": "https://img.zcool.cn/material/69cdc9ab21c32vxx2s09zc6656.jpg?k=5dfc51dd6694178a75d099c87b2bd2ac&t=6a342705",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "未找到独立官网；用公开品牌设计页作来源，图标需人工复核",
+      "bytes": 90003
+    },
+    {
+      "slug": "godiva",
+      "brand": "歌帝梵 Godiva",
+      "file": "godiva.svg",
+      "page": "https://www.godiva.com/",
+      "download_url": "https://www.godiva.com/cdn/shop/files/39086_godiva-logo-svg.svg?v=1759343745&width=1000",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "官方网站当前 favicon",
+      "bytes": 7690
+    },
+    {
+      "slug": "laiyifen",
+      "brand": "来伊份/来一份",
+      "file": "laiyifen.png",
+      "page": "https://lyf.com/",
+      "download_url": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://lyf.com&size=512",
+      "source_kind": "Google favicon 服务按官方域名抓取当前站点图标",
+      "note": "按来伊份处理；官网下载 head-logo.png",
+      "bytes": 376
+    },
+    {
+      "slug": "wanwu_yikou",
+      "brand": "万物一口",
+      "file": "wanwu_yikou.png",
+      "page": "https://online.petfairasia.com/zh-cn/showroom-2025/brands/adbcee2",
+      "download_url": "https://vnu-storage.event-lightning.com/DTP-pfa/pfa_logo-GaAlgY.png",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "未找到独立官网；用亚洲宠物展 2025 品牌页作来源，图标需人工复核",
+      "bytes": 3649
+    },
+    {
+      "slug": "lee_kum_kee",
+      "brand": "李锦记",
+      "file": "lee_kum_kee.png",
+      "page": "https://www.lkk.com/",
+      "download_url": "https://cdn-akamai.lkk.com/images/LKKLogo-square.png",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "官方网站当前 favicon",
+      "bytes": 1411
+    },
+    {
+      "slug": "byhealth",
+      "brand": "汤臣倍健",
+      "file": "byhealth.png",
+      "page": "https://www.by-health.com/",
+      "download_url": "https://wmdata.by-health.com/byhealth/upload/images/2024/6841810e4d381dc2.png",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "官方网站当前 favicon",
+      "bytes": 8294
+    },
+    {
+      "slug": "tmall",
+      "brand": "天猫",
+      "file": "tmall.png",
+      "page": "https://www.tmall.com/",
+      "download_url": "https://img.alicdn.com/tps/i3/T1OjaVFl4dXXa.JOZB-114-114.png",
+      "source_kind": "官网声明的 icon",
+      "note": "官方网站当前 favicon",
+      "bytes": 4540
+    },
+    {
+      "slug": "freshippo",
+      "brand": "盒马鲜生",
+      "file": "freshippo.png",
+      "page": "https://www.freshippo.com/",
+      "download_url": "https://img.alicdn.com/imgextra/i1/O1CN017dUqIF1HSII6l0mr1_!!6000000000756-2-tps-265-265.png",
+      "source_kind": "官网声明的 icon",
+      "note": "官方网站当前 favicon",
+      "bytes": 4077
+    },
+    {
+      "slug": "estee_lauder",
+      "brand": "雅诗兰黛",
+      "file": "estee_lauder.ico",
+      "page": "https://www.esteelauder.com.cn/",
+      "download_url": "https://www.esteelauder.com.cn/favicon.ico?favicon.9bdadd15.ico",
+      "source_kind": "官网声明的 icon",
+      "note": "中国官方网站当前 favicon",
+      "bytes": 18094
+    },
+    {
+      "slug": "huawei",
+      "brand": "华为",
+      "file": "huawei.png",
+      "page": "https://www.huawei.com/cn/",
+      "download_url": "https://www.huawei.com/-/media/hcomponent-header/1.0.1.20260519084135/component/img/huawei_logo.png",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "官方网站当前 favicon",
+      "bytes": 12719
+    },
+    {
+      "slug": "iflytek",
+      "brand": "科大讯飞",
+      "file": "iflytek.ico",
+      "page": "https://www.iflytek.com/",
+      "download_url": "https://www.iflytek.com/static/favicon.ico",
+      "source_kind": "官网声明的 icon",
+      "note": "官方网站当前 favicon",
+      "bytes": 2971
+    },
+    {
+      "slug": "popsockets",
+      "brand": "泡泡骚 PopSockets",
+      "file": "popsockets.svg",
+      "page": "https://www.popsockets.com/",
+      "download_url": "https://www.popsockets.com/on/demandware.static/-/Library-Sites-AutobahnSharedLibrary/default/dw5f74b276/images/logo.svg",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "按 PopSockets 处理；官方网站当前 favicon",
+      "bytes": 4022
+    },
+    {
+      "slug": "rio",
+      "brand": "RIO 锐澳",
+      "file": "rio.svg",
+      "page": "https://www.rioalc.com/",
+      "download_url": "https://www.rioalc.com/uploads/upload/images/20250617/4905063ab2e3535b1874117c96478487.svg",
+      "source_kind": "官网 HTML 中 logo 图片",
+      "note": "官方网站当前 favicon",
+      "bytes": 1890
+    },
+    {
+      "slug": "lawson",
+      "brand": "罗森",
+      "file": "lawson.png",
+      "page": "https://www.chinalawson.com.cn/",
+      "download_url": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.chinalawson.com.cn&size=512",
+      "source_kind": "官网 favicon 文件",
+      "note": "更正为罗森中国官网当前 favicon",
+      "bytes": 436
+    },
+    {
+      "slug": "popmart",
+      "brand": "POP MART 泡泡玛特",
+      "file": "popmart.png",
+      "page": "https://www.popmart.com/",
+      "download_url": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://popmart.com&size=512",
+      "source_kind": "Google favicon 服务按官方域名抓取当前站点图标",
+      "note": "官方网站当前 favicon",
+      "bytes": 257
+    },
+    {
+      "slug": "peninsula",
+      "brand": "半岛酒店",
+      "file": "peninsula.png",
+      "page": "https://www.peninsula.com/",
+      "download_url": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://peninsula.com&size=512",
+      "source_kind": "Google favicon 服务按官方域名抓取当前站点图标",
+      "note": "官方网站当前 favicon",
+      "bytes": 254
+    },
+    {
+      "slug": "casetify",
+      "brand": "CASETiFY",
+      "file": "casetify.png",
+      "page": "https://www.casetify.com/",
+      "download_url": "https://ctgimage1.s3.amazonaws.com/cms/image/6fa327bd55bdbbba4d13e3339edadbdd.png",
+      "source_kind": "官网 OG 图片",
+      "note": "按 C 开头贵手机壳 CASETiFY 处理；官方网站当前 favicon",
+      "bytes": 848235
+    },
+    {
+      "slug": "rehau",
+      "brand": "德国瑞好 REHAU 门窗",
+      "file": "rehau.png",
+      "page": "https://www.rehau.com/cn-zh/windows-and-doors-system",
+      "download_url": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://rehau.com&size=512",
+      "source_kind": "Google favicon 服务按官方域名抓取当前站点图标",
+      "note": "德国瑞好官方网站/品牌门户；图标用官方域名当前 favicon",
+      "bytes": 336
+    }
+  ],
+  "failures": []
+}
