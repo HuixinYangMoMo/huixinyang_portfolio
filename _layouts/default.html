@@ -9,7 +9,14 @@
         <link rel="stylesheet" href="{{ page.custom_css | relative_url }}">
     {% endif %}
 </head>
-<body{% if page.permalink == '/opening/' %} class="opening-page-body"{% endif %}>
+{% assign body_classes = '' %}
+{% if page.permalink == '/opening/' %}
+    {% assign body_classes = body_classes | append: ' opening-page-body' %}
+{% endif %}
+{% if page.body_class %}
+    {% assign body_classes = body_classes | append: ' ' | append: page.body_class %}
+{% endif %}
+<body{% if body_classes != '' %} class="{{ body_classes | strip }}"{% endif %}>
     <nav class="nav">
         <div class="container nav-shell">
             <a class="brand-lockup" href="{{ '/' | relative_url }}">
@@ -43,4 +50,4 @@
         </div>
     </footer>
 </body>
-</html> 
+</html>

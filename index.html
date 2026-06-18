@@ -2,9 +2,35 @@
 layout: default
 title: 作品集
 permalink: /
+body_class: home-page
 ---
 
 {% assign sorted_works = site.works | sort: "date" | reverse %}
+<section class="home-hero" aria-labelledby="home-hero-title">
+    <div class="home-hero__media" aria-hidden="true">
+        <img src="{{ '/images/generated/home-hero-balanced-future.png' | relative_url }}" alt="">
+    </div>
+    <div class="home-hero__shade" aria-hidden="true"></div>
+
+    <div class="container home-hero__content">
+        <div class="home-hero__copy">
+            <span class="home-hero__label">Portfolio 2026</span>
+            <h1 id="home-hero-title">杨慧鑫作品集</h1>
+            <p>广告美术、品牌视觉与 AIGC 视觉方向的精选入口。先用开屏建立记忆点，再把项目、方法和联系方式放回清晰的浏览路径里。</p>
+            <div class="home-hero__actions">
+                <a href="#works" class="home-hero__button">Selected Work</a>
+                <a href="{{ '/about/' | relative_url }}" class="home-hero__text-link">About</a>
+            </div>
+        </div>
+
+        <div class="home-hero__index" aria-hidden="true">
+            <span>01</span>
+            <div></div>
+            <span>08</span>
+        </div>
+    </div>
+</section>
+
 <section class="works-shell section section--tight" id="works">
     <div class="container">
         <div class="works-intro section__head">

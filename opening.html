@@ -103,5 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <script>
 window.__OPENING_ASSET_VERSION__ = "{{ site.time | date: '%s' }}";
+window.__OPENING_BASE_URL__ = "{{ '/' | relative_url }}";
 </script>
 <script src="{{ '/assets/js/opening-canvas.js' | relative_url }}?v={{ site.time | date: '%s' }}"></script>

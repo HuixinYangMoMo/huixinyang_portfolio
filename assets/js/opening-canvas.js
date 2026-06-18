@@ -11,6 +11,10 @@ const ASSET_VERSION =
   typeof window !== "undefined" && window.__OPENING_ASSET_VERSION__
     ? `?v=${window.__OPENING_ASSET_VERSION__}`
     : "";
+const BASE_URL =
+  typeof window !== "undefined" && window.__OPENING_BASE_URL__
+    ? window.__OPENING_BASE_URL__
+    : "/";
 
 function loadImage(src) {
   return new Promise((resolve, reject) => {
@@ -53,8 +57,22 @@ async function initOpeningCanvas() {
   resize();
 
   // Load the newly perfectly mapped landscape reference image
-  const imgUrl = `/assets/images/pixel/original_hallway.png${ASSET_VERSION}`;
-  const baseImg = await loadImage(imgUrl);
+  const imgUrl = `${BASE_URL}assets/images/pixel/original_hallway.png${ASSET_VERSION}`;
+  let baseImg;
+  try {
+    baseImg = await loadImage(imgUrl);
+  } catch (error) {
+    try {
+      baseImg = await loadImage(`${BASE_URL}assets/images/pixel/hallway.jpeg${ASSET_VERSION}`);
+    } catch (fallbackError) {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+      ctx.fillStyle = "#f5f1e8";
+      ctx.font = 'bold 28px "SF Mono", Menlo, Consolas, monospace';
+      ctx.fillText("Opening visual is loading.", 48, 64);
+      throw fallbackError;
+    }
+  }
   
   // Downscale the image exactly to the character grid dimensions.
   // Each pixel in this offscreen canvas will correspond to ONE character on the screen.

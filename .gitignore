@@ -42,6 +42,8 @@ _site/
 .sass-cache/
 .jekyll-cache/
 .jekyll-metadata
+GITHUB_PAGES_HANDOFF.md
+snapshot_*.png
 
 # Ruby #
 ########

@@ -5,6 +5,13 @@ url: "https://huixinyangmomo.github.io"
 lang: zh-CN
 timezone: Asia/Shanghai
 markdown: kramdown
+exclude:
+  - GITHUB_PAGES_HANDOFF.md
+  - .bundle/
+  - node_modules/
+  - vendor/
+  - package.json
+  - package-lock.json
 author:
   name: 杨慧鑫
 
