@@ -16,7 +16,6 @@ body_class: home-page
         <div class="home-hero__copy">
             <span class="home-hero__label">Portfolio 2026</span>
             <h1 id="home-hero-title">杨慧鑫作品集</h1>
-            <p>广告美术、品牌视觉与 AIGC 视觉方向的精选入口。先用开屏建立记忆点，再把项目、方法和联系方式放回清晰的浏览路径里。</p>
             <div class="home-hero__actions">
                 <a href="#works" class="home-hero__button">Selected Work</a>
                 <a href="{{ '/about/' | relative_url }}" class="home-hero__text-link">About</a>
@@ -33,12 +32,8 @@ body_class: home-page
 
 <section class="works-shell section section--tight" id="works">
     <div class="container">
-        <div class="works-intro section__head">
-            <div class="works-heading">
-                <span class="kicker">Selected Work</span>
-                <h2>先看作品入口，再决定进哪一页。</h2>
-            </div>
-            <p>首页只保留精选项目的图片、标题和最少量信息；更完整的背景、过程与方法都放进项目详情页。</p>
+        <div class="works-intro">
+            <span class="kicker">Selected Work</span>
         </div>
 
         <div class="works-grid">
@@ -67,11 +62,6 @@ body_class: home-page
                 </div>
             </a>
             {% endfor %}
-        </div>
-
-        <div class="archive-link">
-            <h3>AIGC 方向的内容会继续单独整理</h3>
-            <p>相关方法、过程和工作流会优先放在独立项目页里，而不是回到首页抢结构。首页只负责把你带到正确的入口。</p>
         </div>
     </div>
 </section>
