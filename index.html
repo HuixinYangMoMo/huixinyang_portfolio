@@ -9,8 +9,25 @@ body_class: home-page
 {% assign work_count = sorted_works | size %}
 
 <section class="story-hero" id="top" aria-labelledby="home-hero-title">
-    <div class="story-hero__image" aria-hidden="true">
-        <img src="{{ '/images/generated/home-hero-balanced-future.png' | relative_url }}" alt="">
+    <div class="story-device" data-hero-device aria-hidden="true">
+        <div class="story-device__rail"></div>
+        <div class="story-device__tether story-device__tether--left"></div>
+        <div class="story-device__tether story-device__tether--right"></div>
+        <div class="story-device__carriage">
+            <div class="story-device__arm"></div>
+            <div class="story-device__pane story-device__pane--main">
+                <img src="{{ '/images/works/wonderwall/gallery1.jpg' | relative_url }}" alt="">
+            </div>
+            <div class="story-device__pane story-device__pane--side">
+                <img src="{{ '/images/works/laiyifen-new-year/featured.jpg' | relative_url }}" alt="">
+            </div>
+            <div class="story-device__pane story-device__pane--signal">
+                <img src="{{ '/images/generated/aigc-section-cover.png' | relative_url }}" alt="">
+            </div>
+            <div class="story-device__scanner"></div>
+            <div class="story-device__lens"></div>
+        </div>
+        <div class="story-device__shadow"></div>
     </div>
     <div class="story-hero__grid" aria-hidden="true"></div>
 

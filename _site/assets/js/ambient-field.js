@@ -78,6 +78,12 @@
   const handlePointer = (event) => {
     pointerX = event.clientX / Math.max(width, 1);
     pointerY = event.clientY / Math.max(height, 1);
+    const offsetX = pointerX - 0.5;
+    const offsetY = pointerY - 0.5;
+    document.documentElement.style.setProperty("--hero-shift-x", `${offsetX * 42}px`);
+    document.documentElement.style.setProperty("--hero-shift-y", `${offsetY * 30}px`);
+    document.documentElement.style.setProperty("--hero-tilt", `${offsetX * 3.5}deg`);
+    document.documentElement.style.setProperty("--hero-depth", `${offsetY * 18}px`);
   };
 
   window.addEventListener("resize", resize);
