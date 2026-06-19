@@ -6,62 +6,78 @@ body_class: home-page
 ---
 
 {% assign sorted_works = site.works | sort: "date" | reverse %}
-<section class="home-hero" aria-labelledby="home-hero-title">
-    <div class="home-hero__media" aria-hidden="true">
+{% assign work_count = sorted_works | size %}
+
+<section class="story-hero" id="top" aria-labelledby="home-hero-title">
+    <div class="story-hero__image" aria-hidden="true">
         <img src="{{ '/images/generated/home-hero-balanced-future.png' | relative_url }}" alt="">
     </div>
-    <div class="home-hero__shade" aria-hidden="true"></div>
+    <div class="story-hero__grid" aria-hidden="true"></div>
 
-    <div class="container home-hero__content">
-        <div class="home-hero__copy">
-            <span class="home-hero__label">Portfolio 2026</span>
-            <h1 id="home-hero-title">杨慧鑫作品集</h1>
-            <div class="home-hero__actions">
-                <a href="#works" class="home-hero__button">Selected Work</a>
-                <a href="{{ '/about/' | relative_url }}" class="home-hero__text-link">About</a>
+    <div class="container story-hero__inner">
+        <div class="story-hero__identity">
+            <span class="story-hero__eyebrow">Portfolio / 2026</span>
+            <h1 id="home-hero-title">
+                <span>杨慧鑫</span>
+                <span>Visual Direction</span>
+            </h1>
+            <div class="story-hero__tags" aria-label="作品方向">
+                <span>Advertising Art</span>
+                <span>Brand Visual</span>
+                <span>AIGC System</span>
             </div>
         </div>
 
-        <div class="home-hero__index" aria-hidden="true">
-            <span>01</span>
-            <div></div>
-            <span>08</span>
+        <div class="story-hero__panel" aria-hidden="true">
+            <span>Shanghai</span>
+            <span>31.2304 N</span>
+            <span>121.4737 E</span>
         </div>
     </div>
 </section>
 
-<section class="works-shell section section--tight" id="works">
+<section class="discipline-band" aria-label="作品方向">
+    <div class="container discipline-band__inner">
+        <span>Brand</span>
+        <span>Packaging</span>
+        <span>Campaign</span>
+        <span>AI Image</span>
+    </div>
+</section>
+
+<section class="project-index section section--tight" id="works">
     <div class="container">
-        <div class="works-intro">
-            <span class="kicker">Selected Work</span>
+        <div class="project-index__head">
+            <span>Selected Work</span>
+            <span>{{ work_count }} Projects</span>
         </div>
 
-        <div class="works-grid">
+        <div class="project-stack">
             {% for work in sorted_works %}
-            <a href="{{ work.url | relative_url }}" class="works-card">
-                <div class="works-card__image">
-                    {% if work.featured_image %}
-                    <img src="{{ work.featured_image | relative_url }}" alt="{{ work.title }}">
-                    {% endif %}
-                </div>
-                <div class="works-card__body">
-                    <div class="works-card__topline">
-                        <span>{% if work.category_label %}{{ work.category_label }}{% elsif work.category %}{{ work.category }}{% else %}作品项目{% endif %}</span>
-                        {% if work.date %}<span>{{ work.date | date: "%Y" }}</span>{% endif %}
-                    </div>
-                    <h3>{{ work.title }}</h3>
-                    <div class="works-card__meta-line">
-                        {% if work.client %}
-                        {{ work.client }}
-                        {% elsif work.summary %}
-                        {{ work.summary | truncate: 40 }}
-                        {% else %}
-                        点击进入项目详情页
-                        {% endif %}
-                    </div>
-                </div>
+            <a href="{{ work.url | relative_url }}" class="project-row">
+                <span class="project-row__number">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+                <span class="project-row__title">{{ work.title }}</span>
+                <span class="project-row__meta">
+                    {% if work.category_label %}{{ work.category_label }}{% elsif work.category %}{{ work.category }}{% elsif work.client %}{{ work.client }}{% else %}Project{% endif %}
+                    {% if work.date %} / {{ work.date | date: "%Y" }}{% endif %}
+                </span>
+                {% if work.featured_image %}
+                <span class="project-row__thumb" aria-hidden="true">
+                    <img src="{{ work.featured_image | relative_url }}" alt="">
+                </span>
+                {% endif %}
             </a>
             {% endfor %}
         </div>
+    </div>
+</section>
+
+<section class="future-index" aria-label="AIGC future index">
+    <div class="container future-index__inner">
+        <a href="{{ '/works/aigc-lab-roadmap/' | relative_url }}" class="future-index__link">
+            <span>Next Layer</span>
+            <strong>AIGC Visual Lab</strong>
+            <em>Image System / Workflow / Campaign Simulation</em>
+        </a>
     </div>
 </section>

@@ -1,69 +1,39 @@
 ---
 layout: work
-title: AIGC 视觉实验与工作流案例
-client: 自驱项目
+title: AIGC Visual Lab
+client: Self-initiated
 date: 2026-03-30
 category: aigc
 category_label: AIGC 方向
-summary: 这不是单个案例，而是 AIGC 方向的栏目入口。它先解释后续会补哪些内容、用什么方式整理，以及为什么这些内容不会直接铺回首页。
-role: 栏目整理 / 方法梳理 / AIGC 方向持续建设
+summary: AI image systems, campaign simulation, visual workflow.
+role: Visual Direction / Image System / Workflow
 featured_image: /images/generated/aigc-section-cover.png
 services:
-  - 概念视觉探索
-  - 图像编辑与精修
-  - 风格统一
-  - 商业化提案
-status_label: 持续建设中
-outcome: 目标是把零散尝试整理成能被招聘方和合作方真正看懂的案例入口，而不是继续堆工具截图。
+  - Image System
+  - Campaign Simulation
+  - Workflow
+  - Visual Research
+status_label: Building
+outcome: Modular lab for future AI-led visual projects.
 permalink: /works/aigc-lab-roadmap/
 ---
 
-## 这个页面在站点里扮演什么角色
+## Signal
 
-它更接近一个栏目入口，而不是一篇已经写完的案例正文。
+- Image System
+- Campaign Simulation
+- Visual Workflow
+- Style Transfer
 
-之所以单独留出这一页，是因为 AIGC 相关内容如果直接铺在首页，网站会重新变得松散，也会影响作品入口的清晰度。所以这页负责承接之后所有与 AIGC 方向相关的案例、过程和方法总结。
+## Studies
 
-## 这个栏目后续会放什么
+- Brand scene generation
+- Packaging variation
+- Key visual extension
+- Human retouch loop
 
-后续新增内容会尽量围绕以下四类展开，而不是以“工具展示”为主：
+## Next
 
-1. 概念视觉探索  
-   从一句核心创意或品牌命题出发，展示不同方向的视觉提案、风格探索和情绪板整理。
-
-2. 图像编辑与精修流程  
-   展示从原始素材到 AI 辅助重绘、局部替换、背景重构和统一风格的完整过程。
-
-3. 品牌或 Campaign 应用尝试  
-   把 AIGC 结果真正放进海报、KV、包装提案、社交媒体视觉等商业化场景中。
-
-4. 工作流方法总结  
-   不只展示结果，也记录 prompt 策略、模型组合、选图逻辑和二次修图方式，形成可复用的方法论。
-
-## 为什么要这样整理
-
-我不希望这部分内容最后变成“会几个工具”的说明页，而是要让人看到三件更重要的事：
-
-- 视觉判断依然在前面，工具只是方法
-- AIGC 内容最终要能进入品牌、传播或提案语境
-- 每个项目都应该讲清楚：为什么这样做、怎么筛选、最后怎么落地
-
-## 如果要做成一套完整的 AIGC 作品集，我会优先补这些内容
-
-- 每个项目的创意背景和目标，而不是只放成图
-- 关键词与风格方向的推导过程
-- 多版生成结果之间的筛选依据
-- AI 初稿与人工精修之间的差异
-- 最终成品在真实应用场景中的展示方式
-- 对模型能力和限制的判断，而不是单纯展示工具炫技
-
-## 我希望这个栏目最终体现的能力
-
-- 视觉审美仍然是核心，而不是被工具牵着走
-- 能把 AIGC 当作创意扩展与效率工具，而不是替代思考
-- 能把生成结果进一步整理成品牌、传播或提案语言
-- 能逐步形成适合商业项目的稳定工作流
-
-## 目前阶段的结论
-
-这页现在先承担“入口”和“方法说明”的作用。等后续案例逐步补齐以后，它会继续往下分化成更完整的 AIGC 项目页，但在现阶段，它不应该反过来影响首页骨架，也不应该要求首页先承担所有解释任务。
+- Case 01 / AI campaign board
+- Case 02 / product world building
+- Case 03 / image consistency system

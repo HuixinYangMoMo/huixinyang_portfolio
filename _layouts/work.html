@@ -5,52 +5,43 @@ layout: default
 {% assign related_works = site.works | where_exp: "item", "item.url != page.url" | sort: "date" | reverse %}
 
 <article class="work-page">
-    <section class="section section--tight">
-        <div class="container">
-            <div class="work-hero">
-                <div class="work-hero__content">
-                    <span class="eyebrow">{% if page.category_label %}{{ page.category_label }}{% elsif page.category %}{{ page.category }}{% else %}Project Detail{% endif %}</span>
-                    <h1>{{ page.title }}</h1>
-                    <div class="work-meta">
-                        {% if page.client %}<span>客户 / {{ page.client }}</span>{% endif %}
-                        {% if page.role %}<span>角色 / {{ page.role }}</span>{% endif %}
-                        {% if page.date %}<span>时间 / {{ page.date | date: "%Y-%m" }}</span>{% endif %}
-                        {% if page.status_label %}<span>{{ page.status_label }}</span>{% endif %}
-                    </div>
+    <section class="project-hero">
+        {% if page.featured_image %}
+        <div class="project-hero__media" aria-hidden="true">
+            <img src="{{ page.featured_image | relative_url }}" alt="">
+        </div>
+        {% endif %}
 
-                    {% if page.summary %}
-                    <p class="work-lead">{{ page.summary }}</p>
-                    {% else %}
-                    <p class="work-lead">这个页面承接首页入口，只展开该项目真正需要的背景、方法、画面和结果，不再把所有信息提前堆在首页里。</p>
-                    {% endif %}
+        <div class="container project-hero__inner">
+            <nav class="project-crumb" aria-label="breadcrumb">
+                <a href="{{ '/' | relative_url }}">Home</a>
+                <span>/</span>
+                <a href="{{ '/#works' | relative_url }}">Work</a>
+            </nav>
 
-                    {% if page.category == "aigc" %}
-                    <div class="hero-signal" aria-hidden="true">
-                        <span>signal flow</span>
-                        <span>prompt logic</span>
-                        <span>image refine</span>
-                    </div>
-                    {% endif %}
-                </div>
+            <div class="project-hero__title">
+                <span class="eyebrow">{% if page.category_label %}{{ page.category_label }}{% elsif page.category %}{{ page.category }}{% else %}Project{% endif %}</span>
+                <h1>{{ page.title }}</h1>
+            </div>
 
-                {% if page.featured_image %}
-                <div class="work-hero__media">
-                    <img src="{{ page.featured_image | relative_url }}" alt="{{ page.title }}">
-                </div>
-                {% endif %}
+            <div class="work-meta project-hero__meta">
+                {% if page.client %}<span>{{ page.client }}</span>{% endif %}
+                {% if page.role %}<span>{{ page.role }}</span>{% endif %}
+                {% if page.date %}<span>{{ page.date | date: "%Y" }}</span>{% endif %}
+                {% if page.status_label %}<span>{{ page.status_label }}</span>{% endif %}
             </div>
         </div>
     </section>
 
     <section class="section section--tight">
         <div class="container">
-            <div class="work-hero">
+            <div class="project-body">
                 <div class="work-richtext">
                     {{ content }}
                 </div>
 
                 <aside class="work-summary">
-                    <h2>项目信息</h2>
+                    <h2>Index</h2>
                     <dl>
                         {% if page.client %}
                         <div>
@@ -100,9 +91,7 @@ layout: default
             <div class="section__head">
                 <div>
                     <span class="kicker">More Work</span>
-                    <h2>继续查看其他项目</h2>
                 </div>
-                <p>首页现在只做入口，详情页之间也要像正常网站一样保持顺畅切换，而不是做成看完一页就断掉的孤岛。</p>
             </div>
 
             <div class="related-grid">
@@ -115,7 +104,7 @@ layout: default
                         {% elsif work.excerpt %}
                         {{ work.excerpt | strip_html | strip_newlines | truncate: 72 }}
                         {% else %}
-                        继续查看该项目的背景、图像与页面内容。
+                        {{ work.client | default: "Project" }}
                         {% endif %}
                     </p>
                 </a>

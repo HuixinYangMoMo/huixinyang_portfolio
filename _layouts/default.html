@@ -17,6 +17,7 @@
     {% assign body_classes = body_classes | append: ' ' | append: page.body_class %}
 {% endif %}
 <body{% if body_classes != '' %} class="{{ body_classes | strip }}"{% endif %}>
+    <canvas class="ambient-field" data-ambient-field aria-hidden="true"></canvas>
     <nav class="nav">
         <div class="container nav-shell">
             <a class="brand-lockup" href="{{ '/' | relative_url }}">
@@ -49,5 +50,6 @@
             </div>
         </div>
     </footer>
+    <script src="{{ '/assets/js/ambient-field.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
 </body>
 </html>
