@@ -9,28 +9,28 @@ body_class: home-page
 {% assign work_count = sorted_works | size %}
 
 <section class="story-hero" id="top" aria-labelledby="home-hero-title">
-    <div class="story-stage" data-hero-device aria-hidden="true">
-        <div class="story-stage__plate story-stage__plate--back"></div>
-        <div class="story-stage__track"></div>
-        <div class="story-stage__object story-stage__object--orb">
-            <span></span>
-            <span></span>
+    <div class="drink-stage" data-drink-stage aria-hidden="true">
+        <div class="drink-stage__halo"></div>
+        <div class="drink-stage__orbit drink-stage__orbit--outer"></div>
+        <div class="drink-stage__orbit drink-stage__orbit--inner"></div>
+        <div class="drink-stage__spoon"></div>
+        <div class="drink-cup">
+            <div class="drink-cup__back"></div>
+            <div class="drink-cup__liquid"></div>
+            <canvas class="drink-cup__flow" data-drink-flow></canvas>
+            <div class="drink-cup__surface"></div>
+            <div class="drink-cup__straw">
+                <span></span>
+            </div>
+            <div class="drink-cup__glass"></div>
+            <div class="drink-cup__rim"></div>
+            <div class="drink-cup__shine drink-cup__shine--left"></div>
+            <div class="drink-cup__shine drink-cup__shine--right"></div>
         </div>
-        <div class="story-stage__object story-stage__object--flower">
-            <i></i>
-            <i></i>
-            <i></i>
-            <i></i>
-            <i></i>
-            <i></i>
-            <b></b>
-        </div>
-        <div class="story-stage__object story-stage__object--vessel"></div>
-        <div class="story-stage__object story-stage__object--glass"></div>
-        <div class="story-stage__spark story-stage__spark--one"></div>
-        <div class="story-stage__spark story-stage__spark--two"></div>
-        <div class="story-stage__spark story-stage__spark--three"></div>
-        <div class="story-stage__shadow"></div>
+        <div class="drink-stage__drop drink-stage__drop--one"></div>
+        <div class="drink-stage__drop drink-stage__drop--two"></div>
+        <div class="drink-stage__drop drink-stage__drop--three"></div>
+        <div class="drink-stage__shadow"></div>
     </div>
     <div class="story-hero__grid" aria-hidden="true"></div>
 
