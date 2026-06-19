@@ -65,34 +65,3 @@ body_class: home-page
         </div>
     </div>
 </section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const params = new URLSearchParams(window.location.search);
-    const cameFromOpening = params.get('entered') === '1';
-    const navEntry = performance.getEntriesByType('navigation')[0];
-    const navType = navEntry ? navEntry.type : '';
-    let sameOriginReferrer = false;
-
-    try {
-        if (document.referrer) {
-            const referrerUrl = new URL(document.referrer);
-            sameOriginReferrer = referrerUrl.origin === window.location.origin;
-        }
-    } catch (error) {
-        sameOriginReferrer = false;
-    }
-
-    if (cameFromOpening) {
-        params.delete('entered');
-        const query = params.toString();
-        const nextUrl = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
-        window.history.replaceState({}, '', nextUrl);
-        return;
-    }
-
-    if (navType === 'reload' || !sameOriginReferrer) {
-        window.location.replace('{{ "/opening/" | relative_url }}');
-    }
-});
-</script>
