@@ -338,18 +338,195 @@
     return { draw: step, resize };
   };
 
+  const setupWorkWall = () => {
+    const wall = document.querySelector("[data-work-wall]");
+    const canvas = document.querySelector("[data-work-physics]");
+    const cards = Array.from(document.querySelectorAll("[data-work-card]"));
+    if (!wall || !canvas || cards.length === 0) return null;
+
+    const ctx = canvas.getContext("2d", { alpha: true });
+    const states = cards.map(() => ({ x: 0, y: 0, vx: 0, vy: 0, glow: 0, targetGlow: 0 }));
+    const cursor = { x: 0, y: 0, active: false };
+    let rect = wall.getBoundingClientRect();
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+
+    const resize = () => {
+      rect = wall.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = Math.max(1, rect.width);
+      height = Math.max(1, rect.height);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const updateCardLight = (card, cardRect) => {
+      const localX = clamp(((cursor.x - cardRect.left) / Math.max(cardRect.width, 1)) * 100, 0, 100);
+      const localY = clamp(((cursor.y - cardRect.top) / Math.max(cardRect.height, 1)) * 100, 0, 100);
+      card.style.setProperty("--card-light-x", `${localX}%`);
+      card.style.setProperty("--card-light-y", `${localY}%`);
+    };
+
+    const handleMove = (event) => {
+      cursor.x = event.clientX;
+      cursor.y = event.clientY;
+      cursor.active = true;
+    };
+
+    const handleLeave = () => {
+      cursor.active = false;
+    };
+
+    const reveal = () => {
+      wall.classList.add("is-visible");
+    };
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reveal();
+            observer.disconnect();
+          }
+        });
+      }, { threshold: 0.18 });
+      observer.observe(wall);
+    } else {
+      reveal();
+    }
+
+    wall.addEventListener("pointermove", handleMove, { passive: true });
+    wall.addEventListener("pointerleave", handleLeave, { passive: true });
+
+    const draw = (time) => {
+      rect = wall.getBoundingClientRect();
+      ctx.clearRect(0, 0, width, height);
+      ctx.globalCompositeOperation = "screen";
+
+      const points = [];
+      cards.forEach((card, index) => {
+        const state = states[index];
+        const cardRect = card.getBoundingClientRect();
+        const centerX = cardRect.left + cardRect.width * 0.5;
+        const centerY = cardRect.top + cardRect.height * 0.5;
+        const dx = cursor.x - centerX;
+        const dy = cursor.y - centerY;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+        const radius = Math.max(cardRect.width, cardRect.height) * 0.92;
+        const force = cursor.active ? clamp(1 - dist / radius, 0, 1) : 0;
+        const direction = dist ? force / dist : 0;
+
+        state.vx += -dx * direction * 0.72;
+        state.vy += -dy * direction * 0.72;
+        state.vx += -state.x * 0.11;
+        state.vy += -state.y * 0.11;
+        state.vx *= 0.74;
+        state.vy *= 0.74;
+        state.x += state.vx;
+        state.y += state.vy;
+        state.x = clamp(state.x, -22, 22);
+        state.y = clamp(state.y, -18, 18);
+        state.targetGlow = force;
+        state.glow = lerp(state.glow, state.targetGlow, 0.12);
+
+        const tilt = clamp((state.x / 22) * 2.8, -3.2, 3.2);
+        card.style.setProperty("--push-x", `${state.x.toFixed(2)}px`);
+        card.style.setProperty("--push-y", `${state.y.toFixed(2)}px`);
+        card.style.setProperty("--tilt", `${tilt.toFixed(2)}deg`);
+        card.style.setProperty("--card-glow", state.glow.toFixed(3));
+        if (cursor.active && force > 0) updateCardLight(card, cardRect);
+
+        points.push({
+          x: centerX - rect.left + state.x,
+          y: centerY - rect.top + state.y,
+          glow: state.glow,
+        });
+      });
+
+      for (let i = 0; i < points.length; i += 1) {
+        const point = points[i];
+        const pulse = Math.sin(time * 0.0012 + i) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255, 216, 77, ${0.08 + point.glow * 0.16})`;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 2.8 + pulse * 1.8 + point.glow * 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        const next = points[(i + 2) % points.length];
+        const dist = Math.hypot(next.x - point.x, next.y - point.y);
+        if (dist < Math.min(width, height) * 0.62) {
+          ctx.strokeStyle = `rgba(248, 241, 223, ${0.035 + (point.glow + next.glow) * 0.08})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(point.x, point.y);
+          ctx.lineTo(next.x, next.y);
+          ctx.stroke();
+        }
+      }
+
+      if (cursor.active) {
+        const localX = cursor.x - rect.left;
+        const localY = cursor.y - rect.top;
+        const gradient = ctx.createRadialGradient(localX, localY, 0, localX, localY, Math.min(width, height) * 0.3);
+        gradient.addColorStop(0, "rgba(255, 88, 72, 0.13)");
+        gradient.addColorStop(0.42, "rgba(169, 217, 255, 0.06)");
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      ctx.globalCompositeOperation = "source-over";
+    };
+
+    resize();
+    return { draw, resize };
+  };
+
+  const setupDeckFrame = () => {
+    const frame = document.querySelector("[data-deck-frame]");
+    if (!frame) return;
+
+    const url = frame.getAttribute("data-pdf-url");
+    if (!url) return;
+
+    fetch(url, { method: "HEAD" })
+      .then((response) => {
+        if (response.ok) return;
+        throw new Error("PDF missing");
+      })
+      .catch(() => {
+        frame.classList.add("is-missing");
+        frame.insertAdjacentHTML(
+          "beforeend",
+          '<div class="deck-placeholder"><strong>Process Deck</strong><span>assets/decks/process-deck.pdf</span></div>'
+        );
+        const download = document.querySelector("[data-deck-download]");
+        if (download) {
+          download.setAttribute("aria-disabled", "true");
+          download.addEventListener("click", (event) => event.preventDefault());
+        }
+      });
+  };
+
   const ambient = setupAmbient();
   const drinkFlow = setupDrinkFlow();
+  const workWall = setupWorkWall();
+  setupDeckFrame();
 
   const resizeAll = () => {
     ambient?.resize();
     drinkFlow?.resize();
+    workWall?.resize();
   };
 
   let animationFrame = 0;
   const drawAll = (time) => {
     ambient?.draw(time);
     drinkFlow?.draw(time);
+    workWall?.draw(time);
     if (!prefersReducedMotion.matches) {
       animationFrame = requestAnimationFrame(drawAll);
     }

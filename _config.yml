@@ -44,11 +44,11 @@ excerpt_separator: "##"
 
 # 导航菜单
 navigation:
-  - title: 首页
+  - title: Work
     url: /
-  - title: 关于我
-    url: /about/
-  - title: AIGC 方向
+  - title: Process Deck
+    url: /process-deck/
+  - title: AIGC Visual Lab
     url: /works/aigc-lab-roadmap/
 
 # 社交媒体链接

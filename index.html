@@ -6,7 +6,8 @@ body_class: home-page
 ---
 
 {% assign sorted_works = site.works | sort: "date" | reverse %}
-{% assign work_count = sorted_works | size %}
+{% assign display_works = sorted_works | where_exp: "work", "work.category != 'aigc'" %}
+{% assign work_limit = 9 %}
 
 <section class="story-hero" id="top" aria-labelledby="home-hero-title">
     <div class="drink-stage" data-drink-stage aria-hidden="true">
@@ -69,35 +70,42 @@ body_class: home-page
     <div class="container">
         <div class="project-index__head">
             <span>Selected Work</span>
-            <span>{{ work_count }} Projects</span>
+            <span>Curated Wall</span>
         </div>
 
-        <div class="project-stack">
-            {% for work in sorted_works %}
-            <a href="{{ work.url | relative_url }}" class="project-row">
-                <span class="project-row__number">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
-                <span class="project-row__title">{{ work.title }}</span>
-                <span class="project-row__meta">
-                    {% if work.category_label %}{{ work.category_label }}{% elsif work.category %}{{ work.category }}{% elsif work.client %}{{ work.client }}{% else %}Project{% endif %}
-                    {% if work.date %} / {{ work.date | date: "%Y" }}{% endif %}
-                </span>
-                {% if work.featured_image %}
-                <span class="project-row__thumb" aria-hidden="true">
-                    <img src="{{ work.featured_image | relative_url }}" alt="">
-                </span>
-                {% endif %}
-            </a>
+        <div class="work-wall" data-work-wall>
+            <canvas class="work-wall__field" data-work-physics aria-hidden="true"></canvas>
+            <div class="work-wall__grid">
+            {% for work in display_works limit: work_limit %}
+                <a href="{{ work.url | relative_url }}" class="work-card" data-work-card style="--card-index: {{ forloop.index0 }};">
+                    {% if work.featured_image %}
+                    <span class="work-card__media" aria-hidden="true">
+                        <img src="{{ work.featured_image | relative_url }}" alt="">
+                    </span>
+                    {% else %}
+                    <span class="work-card__media work-card__media--empty" aria-hidden="true"></span>
+                    {% endif %}
+                    <span class="work-card__content">
+                        <span class="work-card__number">{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+                        <strong>{{ work.title }}</strong>
+                        <em>
+                            {% if work.category_label %}{{ work.category_label }}{% elsif work.category %}{{ work.category }}{% elsif work.client %}{{ work.client }}{% else %}Project{% endif %}
+                            {% if work.date %} / {{ work.date | date: "%Y" }}{% endif %}
+                        </em>
+                    </span>
+                </a>
             {% endfor %}
+            </div>
         </div>
     </div>
 </section>
 
-<section class="future-index" aria-label="AIGC future index">
+<section class="future-index" aria-label="Process Deck">
     <div class="container future-index__inner">
-        <a href="{{ '/works/aigc-lab-roadmap/' | relative_url }}" class="future-index__link">
-            <span>Next Layer</span>
-            <strong>AIGC Visual Lab</strong>
-            <em>Image System / Workflow / Campaign Simulation</em>
+        <a href="{{ '/process-deck/' | relative_url }}" class="future-index__link">
+            <span>Layer 02</span>
+            <strong>Process Deck</strong>
+            <em>Proposal / Process / Full Case Deck</em>
         </a>
     </div>
 </section>

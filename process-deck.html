@@ -1,0 +1,49 @@
+---
+layout: default
+title: Process Deck
+permalink: /process-deck/
+body_class: deck-page
+---
+
+{% assign deck_pdf = '/assets/decks/process-deck.pdf' | relative_url %}
+
+<section class="deck-hero" aria-labelledby="deck-title">
+    <div class="container deck-hero__inner">
+        <div>
+            <span class="story-hero__eyebrow">Layer 02</span>
+            <h1 id="deck-title">Process Deck</h1>
+        </div>
+        <div class="deck-hero__meta" aria-label="Deck format">
+            <span>Proposal</span>
+            <span>Process</span>
+            <span>PDF</span>
+        </div>
+    </div>
+</section>
+
+<section class="deck-view section section--tight" aria-label="Process Deck PDF">
+    <div class="container deck-view__inner">
+        <aside class="deck-rail" aria-label="Deck layers">
+            <span>01 / Visual</span>
+            <span>02 / Thinking</span>
+            <span>03 / System</span>
+            <a href="{{ deck_pdf }}" class="deck-download" data-deck-download>Open PDF</a>
+        </aside>
+
+        <div class="deck-frame" data-deck-frame data-pdf-url="{{ deck_pdf }}">
+            <object class="deck-object" data="{{ deck_pdf }}" type="application/pdf">
+                <a href="{{ deck_pdf }}">Open PDF</a>
+            </object>
+        </div>
+    </div>
+</section>
+
+<section class="future-index deck-next" aria-label="AIGC next layer">
+    <div class="container future-index__inner">
+        <a href="{{ '/works/aigc-lab-roadmap/' | relative_url }}" class="future-index__link">
+            <span>Layer 03</span>
+            <strong>AIGC Visual Lab</strong>
+            <em>Image System / Workflow / Campaign Simulation</em>
+        </a>
+    </div>
+</section>
