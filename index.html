@@ -9,45 +9,43 @@ body_class: home-page
 {% assign display_works = sorted_works | where_exp: "work", "work.category != 'aigc'" %}
 {% assign work_limit = 9 %}
 
-<section class="story-hero" id="top" aria-labelledby="home-hero-title" data-viewfinder-hero>
-    <div class="viewfinder-stage" data-viewfinder-stage>
-        <canvas class="viewfinder-stage__canvas" data-viewfinder-canvas aria-hidden="true"></canvas>
-        <div class="viewfinder-stage__backdrop" aria-hidden="true"></div>
-        <div class="viewfinder-stage__rail viewfinder-stage__rail--top" aria-hidden="true"></div>
-        <div class="viewfinder-stage__rail viewfinder-stage__rail--bottom" aria-hidden="true"></div>
-        <div class="viewfinder-stage__softlight viewfinder-stage__softlight--rose" aria-hidden="true"></div>
-        <div class="viewfinder-stage__softlight viewfinder-stage__softlight--blue" aria-hidden="true"></div>
-        <div class="viewfinder-lens" data-viewfinder-lens aria-hidden="true">
-            <div class="viewfinder-lens__glass"></div>
-            <div class="viewfinder-lens__ring viewfinder-lens__ring--outer"></div>
-            <div class="viewfinder-lens__ring viewfinder-lens__ring--inner"></div>
-            <div class="viewfinder-lens__gate"></div>
-            <div class="viewfinder-lens__reticle"></div>
-            <div class="viewfinder-lens__spark viewfinder-lens__spark--one"></div>
-            <div class="viewfinder-lens__spark viewfinder-lens__spark--two"></div>
+<section class="story-hero" id="top" aria-labelledby="home-hero-title" data-symbol-hero>
+    <div class="symbol-stage" data-symbol-stage>
+        <canvas class="symbol-stage__canvas" data-symbol-canvas aria-hidden="true"></canvas>
+        <div class="symbol-stage__type" aria-hidden="true">
+            <span>Visual</span>
+            <span>Field</span>
         </div>
-        <div class="viewfinder-shots" data-viewfinder-shots>
-            {% for work in display_works limit: work_limit %}
-            <a href="{{ work.url | relative_url }}" class="viewfinder-shot viewfinder-shot--{{ forloop.index }}" data-viewfinder-shot style="--shot-index: {{ forloop.index0 }};">
-                <span class="viewfinder-shot__media" aria-hidden="true">
-                    {% if work.featured_image %}
-                    <img src="{{ work.featured_image | relative_url }}" alt="">
-                    {% endif %}
-                </span>
-                <span class="viewfinder-shot__meta">
-                    <span>{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
-                    <strong>{{ work.title }}</strong>
-                </span>
-            </a>
-            {% endfor %}
+        <div class="symbol-stage__grid" aria-hidden="true"></div>
+        <div class="symbol-stage__rail symbol-stage__rail--one" aria-hidden="true"></div>
+        <div class="symbol-stage__rail symbol-stage__rail--two" aria-hidden="true"></div>
+        <div class="symbol-stage__beacon symbol-stage__beacon--rose" aria-hidden="true"></div>
+        <div class="symbol-stage__beacon symbol-stage__beacon--blue" aria-hidden="true"></div>
+        <div class="symbol-pass" data-symbol-pass aria-hidden="true">
+            <div class="symbol-pass__glass">
+                <span class="symbol-pass__glyph">YH</span>
+                <span class="symbol-pass__scan symbol-pass__scan--one"></span>
+                <span class="symbol-pass__scan symbol-pass__scan--two"></span>
+                <span class="symbol-pass__node symbol-pass__node--one"></span>
+                <span class="symbol-pass__node symbol-pass__node--two"></span>
+                <span class="symbol-pass__node symbol-pass__node--three"></span>
+            </div>
+            <div class="symbol-pass__edge symbol-pass__edge--top"></div>
+            <div class="symbol-pass__edge symbol-pass__edge--side"></div>
+            <div class="symbol-pass__glint"></div>
         </div>
-        <div class="viewfinder-stage__shadow" aria-hidden="true"></div>
+        <div class="symbol-route" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="symbol-stage__shadow" aria-hidden="true"></div>
     </div>
     <div class="story-hero__grid" aria-hidden="true"></div>
 
     <div class="container story-hero__inner">
         <div class="story-hero__identity">
-            <span class="story-hero__eyebrow">Focus / 2026</span>
+            <span class="story-hero__eyebrow">Entry / 2026</span>
             <h1 id="home-hero-title">
                 <span>杨慧鑫</span>
                 <span>Visual Direction</span>

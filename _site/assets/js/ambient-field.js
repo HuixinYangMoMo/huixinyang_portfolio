@@ -1,9 +1,9 @@
 (() => {
   const root = document.documentElement;
   const ambientCanvas = document.querySelector("[data-ambient-field]");
-  const viewfinderCanvas = document.querySelector("[data-viewfinder-canvas]");
-  const hero = document.querySelector("[data-viewfinder-hero]");
-  const stage = document.querySelector("[data-viewfinder-stage]");
+  const symbolCanvas = document.querySelector("[data-symbol-canvas]");
+  const hero = document.querySelector("[data-symbol-hero]");
+  const stage = document.querySelector("[data-symbol-stage]");
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -29,39 +29,45 @@
     const offsetX = winX - 0.5;
     const offsetY = winY - 0.5;
     const stageRect = stage?.getBoundingClientRect();
-    const viewRect = viewfinderCanvas?.getBoundingClientRect();
+    const viewRect = symbolCanvas?.getBoundingClientRect();
     const stageX = stageRect ? (clientX - stageRect.left) / Math.max(stageRect.width, 1) : winX;
     const stageY = stageRect ? (clientY - stageRect.top) / Math.max(stageRect.height, 1) : winY;
-    const lensX = clamp((stageX - 0.61) * 72 + velocity * 0.012, -38, 38);
-    const lensY = clamp((stageY - 0.45) * 54, -30, 32);
-    const lensTilt = clamp((stageX - 0.5) * 8 + velocity * 0.018, -7, 7);
+    const symbolX = clamp((stageX - 0.62) * 70 + velocity * 0.01, -36, 38);
+    const symbolY = clamp((stageY - 0.42) * 54, -30, 34);
+    const tiltX = clamp((stageX - 0.5) * 14 + velocity * 0.018, -10, 12);
+    const tiltY = clamp((0.5 - stageY) * 10, -8, 8);
 
     root.style.setProperty("--hero-shift-x", `${offsetX * 32}px`);
     root.style.setProperty("--hero-shift-y", `${offsetY * 24}px`);
     root.style.setProperty("--hero-tilt", `${offsetX * 3}deg`);
     root.style.setProperty("--hero-depth", `${offsetY * 18}px`);
-    root.style.setProperty("--focus-x", `${offsetX * 62}px`);
-    root.style.setProperty("--focus-y", `${offsetY * 44}px`);
-    root.style.setProperty("--focus-tilt", `${offsetX * 4.2}deg`);
-    root.style.setProperty("--focus-bg-x", `${62 + offsetX * 4}%`);
-    root.style.setProperty("--focus-bg-y", `${38 + offsetY * 3}%`);
-    root.style.setProperty("--backdrop-x", `${offsetX * -11}px`);
-    root.style.setProperty("--backdrop-y", `${offsetY * -7}px`);
-    root.style.setProperty("--backdrop-tilt", `${offsetX * -0.92}deg`);
-    root.style.setProperty("--rail-top-x", `${offsetX * -14}px`);
-    root.style.setProperty("--rail-top-y", `${offsetY * -4}px`);
-    root.style.setProperty("--rail-bottom-x", `${offsetX * 8}px`);
-    root.style.setProperty("--rail-bottom-y", `${offsetY * 4}px`);
-    root.style.setProperty("--soft-rose-x", `${offsetX * -22}px`);
-    root.style.setProperty("--soft-rose-y", `${offsetY * -8}px`);
-    root.style.setProperty("--soft-blue-x", `${offsetX * 18}px`);
-    root.style.setProperty("--soft-blue-y", `${offsetY * 8}px`);
+    root.style.setProperty("--symbol-bg-x", `${66 + offsetX * 4}%`);
+    root.style.setProperty("--symbol-bg-y", `${42 + offsetY * 4}%`);
+    root.style.setProperty("--type-x", `${offsetX * -16}px`);
+    root.style.setProperty("--type-y", `${offsetY * -10}px`);
+    root.style.setProperty("--grid-x", `${offsetX * -12}px`);
+    root.style.setProperty("--grid-y", `${offsetY * -8}px`);
+    root.style.setProperty("--grid-tilt", `${offsetX * -0.8}deg`);
+    root.style.setProperty("--rail-one-x", `${offsetX * -16}px`);
+    root.style.setProperty("--rail-one-y", `${offsetY * -4}px`);
+    root.style.setProperty("--rail-two-x", `${offsetX * 10}px`);
+    root.style.setProperty("--rail-two-y", `${offsetY * 5}px`);
+    root.style.setProperty("--beacon-rose-x", `${offsetX * 18}px`);
+    root.style.setProperty("--beacon-rose-y", `${offsetY * 10}px`);
+    root.style.setProperty("--beacon-blue-x", `${offsetX * -18}px`);
+    root.style.setProperty("--beacon-blue-y", `${offsetY * -8}px`);
     root.style.setProperty("--glass-x", `${42 + offsetX * 4}%`);
     root.style.setProperty("--glass-y", `${34 + offsetY * 4}%`);
-    root.style.setProperty("--lens-x", `${lensX}px`);
-    root.style.setProperty("--lens-y", `${lensY}px`);
-    root.style.setProperty("--lens-tilt", `${lensTilt}deg`);
-    root.style.setProperty("--focus-pulse", `${pointer.targetStrength.toFixed(3)}`);
+    root.style.setProperty("--symbol-x", `${symbolX}px`);
+    root.style.setProperty("--symbol-y", `${symbolY}px`);
+    root.style.setProperty("--symbol-tilt-x", `${tiltX}deg`);
+    root.style.setProperty("--symbol-tilt-y", `${tiltY}deg`);
+    root.style.setProperty("--symbol-rotate", `${-7 + offsetX * 2.6}deg`);
+    root.style.setProperty("--symbol-glow", `${pointer.targetStrength.toFixed(3)}`);
+    root.style.setProperty("--symbol-glow-alpha", `${(0.06 + pointer.targetStrength * 0.16).toFixed(3)}`);
+    root.style.setProperty("--route-x", `${offsetX * 12}px`);
+    root.style.setProperty("--route-y", `${offsetY * 8}px`);
+    root.style.setProperty("--glint-x", `${-24 + offsetX * 34}px`);
 
     pointer.clientX = clientX;
     pointer.clientY = clientY;
@@ -157,10 +163,10 @@
     return { draw, resize };
   };
 
-  const setupViewfinderField = () => {
-    if (!viewfinderCanvas) return null;
+  const setupSymbolField = () => {
+    if (!symbolCanvas) return null;
 
-    const ctx = viewfinderCanvas.getContext("2d", { alpha: true });
+    const ctx = symbolCanvas.getContext("2d", { alpha: true });
     const motes = [];
     const signals = [];
     let width = 0;
@@ -169,12 +175,12 @@
     let spin = 0;
 
     const resize = () => {
-      const rect = viewfinderCanvas.getBoundingClientRect();
+      const rect = symbolCanvas.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = Math.max(1, rect.width);
       height = Math.max(1, rect.height);
-      viewfinderCanvas.width = Math.floor(width * dpr);
-      viewfinderCanvas.height = Math.floor(height * dpr);
+      symbolCanvas.width = Math.floor(width * dpr);
+      symbolCanvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
@@ -288,10 +294,8 @@
       pointer.strength = lerp(pointer.strength, pointer.targetStrength, 0.06);
       spin += 0.004 + pointer.strength * 0.018;
 
-      root.style.setProperty("--scan-spin", `${40 + spin * 24}deg`);
-      root.style.setProperty("--scan-spin-reverse", `${spin * -10.5}deg`);
-      root.style.setProperty("--focus-pulse", pointer.strength.toFixed(3));
-      root.style.setProperty("--reticle-scale", (1 + pointer.strength * 0.4).toFixed(3));
+      root.style.setProperty("--symbol-glow", pointer.strength.toFixed(3));
+      root.style.setProperty("--symbol-glow-alpha", (0.06 + pointer.strength * 0.16).toFixed(3));
 
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = "screen";
@@ -353,64 +357,6 @@
     resize();
     seed();
     return { draw, resize };
-  };
-
-  const setupViewfinderShots = () => {
-    const shots = Array.from(document.querySelectorAll("[data-viewfinder-shot]"));
-    if (shots.length === 0) return null;
-
-    const states = shots.map((_, index) => ({
-      x: 0,
-      y: 0,
-      vx: 0,
-      vy: 0,
-      glow: 0,
-      phase: index * 0.72,
-    }));
-
-    const draw = (time) => {
-      shots.forEach((shot, index) => {
-        const rect = shot.getBoundingClientRect();
-        const state = states[index];
-        const centerX = rect.left + rect.width * 0.5;
-        const centerY = rect.top + rect.height * 0.5;
-        const dx = pointer.clientX - centerX;
-        const dy = pointer.clientY - centerY;
-        const dist = Math.max(1, Math.hypot(dx, dy));
-        const radius = Math.max(rect.width, rect.height) * 2.1;
-        const force = pointer.active ? clamp(1 - dist / radius, 0, 1) : 0;
-        const driftX = Math.sin(time * 0.0006 + state.phase) * 1.6;
-        const driftY = Math.cos(time * 0.00054 + state.phase) * 1.2;
-
-        state.vx += dx * (force / dist) * 1.25;
-        state.vy += dy * (force / dist) * 1.05;
-        state.vx += (-state.x + driftX) * 0.08;
-        state.vy += (-state.y + driftY) * 0.08;
-        state.vx *= 0.76;
-        state.vy *= 0.76;
-        state.x = clamp(state.x + state.vx, -26, 26);
-        state.y = clamp(state.y + state.vy, -22, 22);
-        state.glow = lerp(state.glow, force, 0.13);
-
-        const localX = clamp((pointer.clientX - rect.left) / Math.max(rect.width, 1) * 100, 0, 100);
-        const localY = clamp((pointer.clientY - rect.top) / Math.max(rect.height, 1) * 100, 0, 100);
-        const tilt = clamp(state.x / 26 * 4.2, -4.2, 4.2);
-
-        shot.style.setProperty("--shot-x", `${state.x.toFixed(2)}px`);
-        shot.style.setProperty("--shot-y", `${state.y.toFixed(2)}px`);
-        shot.style.setProperty("--shot-tilt", `${tilt.toFixed(2)}deg`);
-        shot.style.setProperty("--shot-focus", state.glow.toFixed(3));
-        shot.style.setProperty("--shot-border-alpha", (0.18 + state.glow * 0.22).toFixed(3));
-        shot.style.setProperty("--shot-shadow-alpha", (state.glow * 0.14).toFixed(3));
-        shot.style.setProperty("--shot-scale", (1.03 + state.glow * 0.04).toFixed(3));
-        shot.style.setProperty("--shot-img-opacity", (0.58 + state.glow * 0.2).toFixed(3));
-        shot.style.setProperty("--shot-light-alpha", (0.08 + state.glow * 0.18).toFixed(3));
-        shot.style.setProperty("--shot-light-x", `${localX.toFixed(1)}%`);
-        shot.style.setProperty("--shot-light-y", `${localY.toFixed(1)}%`);
-      });
-    };
-
-    return { draw, resize: () => {} };
   };
 
   const setupWorkWall = () => {
@@ -590,23 +536,20 @@
   };
 
   const ambient = setupAmbient();
-  const viewfinderField = setupViewfinderField();
-  const viewfinderShots = setupViewfinderShots();
+  const symbolField = setupSymbolField();
   const workWall = setupWorkWall();
   setupDeckFrame();
 
   const resizeAll = () => {
     ambient?.resize();
-    viewfinderField?.resize();
-    viewfinderShots?.resize();
+    symbolField?.resize();
     workWall?.resize();
   };
 
   let animationFrame = 0;
   const drawAll = (time) => {
     ambient?.draw(time);
-    viewfinderField?.draw(time);
-    viewfinderShots?.draw(time);
+    symbolField?.draw(time);
     workWall?.draw(time);
     if (!prefersReducedMotion.matches) {
       animationFrame = requestAnimationFrame(drawAll);
