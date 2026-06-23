@@ -1,9 +1,9 @@
 (() => {
   const root = document.documentElement;
   const ambientCanvas = document.querySelector("[data-ambient-field]");
-  const flowCanvas = document.querySelector("[data-drink-flow]");
-  const hero = document.querySelector(".story-hero");
-  const stage = document.querySelector("[data-drink-stage]");
+  const viewfinderCanvas = document.querySelector("[data-viewfinder-canvas]");
+  const hero = document.querySelector("[data-viewfinder-hero]");
+  const stage = document.querySelector("[data-viewfinder-stage]");
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -18,6 +18,9 @@
     targetStrength: 0.14,
     lastX: window.innerWidth * 0.5,
     lastY: window.innerHeight * 0.42,
+    clientX: window.innerWidth * 0.58,
+    clientY: window.innerHeight * 0.42,
+    active: false,
   };
 
   const setCssMotion = (clientX, clientY, velocity = 0) => {
@@ -26,30 +29,46 @@
     const offsetX = winX - 0.5;
     const offsetY = winY - 0.5;
     const stageRect = stage?.getBoundingClientRect();
-    const flowRect = flowCanvas?.getBoundingClientRect();
+    const viewRect = viewfinderCanvas?.getBoundingClientRect();
     const stageX = stageRect ? (clientX - stageRect.left) / Math.max(stageRect.width, 1) : winX;
     const stageY = stageRect ? (clientY - stageRect.top) / Math.max(stageRect.height, 1) : winY;
-    const strawX = clamp((stageX - 0.47) * 118, -40, 44);
-    const strawY = clamp((stageY - 0.28) * 34, -13, 22);
-    const rotate = clamp((stageX - 0.5) * 36 + velocity * 0.16, -22, 22);
+    const lensX = clamp((stageX - 0.61) * 72 + velocity * 0.012, -38, 38);
+    const lensY = clamp((stageY - 0.45) * 54, -30, 32);
+    const lensTilt = clamp((stageX - 0.5) * 8 + velocity * 0.018, -7, 7);
 
     root.style.setProperty("--hero-shift-x", `${offsetX * 32}px`);
     root.style.setProperty("--hero-shift-y", `${offsetY * 24}px`);
     root.style.setProperty("--hero-tilt", `${offsetX * 3}deg`);
     root.style.setProperty("--hero-depth", `${offsetY * 18}px`);
-    root.style.setProperty("--drink-shift-x", `${offsetX * 24}px`);
-    root.style.setProperty("--drink-shift-y", `${offsetY * 16}px`);
-    root.style.setProperty("--drink-tilt", `${offsetX * 2.5}deg`);
-    root.style.setProperty("--straw-x", `${strawX}px`);
-    root.style.setProperty("--straw-y", `${strawY}px`);
-    root.style.setProperty("--straw-rotate", `${rotate}deg`);
-    root.style.setProperty("--liquid-tilt", `${clamp((stageX - 0.5) * 7, -4.2, 4.2)}deg`);
-    root.style.setProperty("--liquid-x", `${clamp((stageX - 0.5) * 18, -8, 8)}%`);
-    root.style.setProperty("--liquid-y", `${clamp((stageY - 0.42) * 14, -6, 8)}%`);
+    root.style.setProperty("--focus-x", `${offsetX * 62}px`);
+    root.style.setProperty("--focus-y", `${offsetY * 44}px`);
+    root.style.setProperty("--focus-tilt", `${offsetX * 4.2}deg`);
+    root.style.setProperty("--focus-bg-x", `${62 + offsetX * 4}%`);
+    root.style.setProperty("--focus-bg-y", `${38 + offsetY * 3}%`);
+    root.style.setProperty("--backdrop-x", `${offsetX * -11}px`);
+    root.style.setProperty("--backdrop-y", `${offsetY * -7}px`);
+    root.style.setProperty("--backdrop-tilt", `${offsetX * -0.92}deg`);
+    root.style.setProperty("--rail-top-x", `${offsetX * -14}px`);
+    root.style.setProperty("--rail-top-y", `${offsetY * -4}px`);
+    root.style.setProperty("--rail-bottom-x", `${offsetX * 8}px`);
+    root.style.setProperty("--rail-bottom-y", `${offsetY * 4}px`);
+    root.style.setProperty("--soft-rose-x", `${offsetX * -22}px`);
+    root.style.setProperty("--soft-rose-y", `${offsetY * -8}px`);
+    root.style.setProperty("--soft-blue-x", `${offsetX * 18}px`);
+    root.style.setProperty("--soft-blue-y", `${offsetY * 8}px`);
+    root.style.setProperty("--glass-x", `${42 + offsetX * 4}%`);
+    root.style.setProperty("--glass-y", `${34 + offsetY * 4}%`);
+    root.style.setProperty("--lens-x", `${lensX}px`);
+    root.style.setProperty("--lens-y", `${lensY}px`);
+    root.style.setProperty("--lens-tilt", `${lensTilt}deg`);
+    root.style.setProperty("--focus-pulse", `${pointer.targetStrength.toFixed(3)}`);
 
-    if (flowRect) {
-      pointer.targetX = clamp((clientX - flowRect.left) / Math.max(flowRect.width, 1), 0.13, 0.87);
-      pointer.targetY = clamp((clientY - flowRect.top) / Math.max(flowRect.height, 1), 0.12, 0.74);
+    pointer.clientX = clientX;
+    pointer.clientY = clientY;
+
+    if (viewRect) {
+      pointer.targetX = clamp((clientX - viewRect.left) / Math.max(viewRect.width, 1), 0.02, 0.98);
+      pointer.targetY = clamp((clientY - viewRect.top) / Math.max(viewRect.height, 1), 0.02, 0.98);
     }
   };
 
@@ -57,13 +76,15 @@
     const velocity = Math.hypot(event.clientX - pointer.lastX, event.clientY - pointer.lastY);
     pointer.lastX = event.clientX;
     pointer.lastY = event.clientY;
+    pointer.active = true;
     pointer.targetStrength = clamp(0.18 + velocity / 42, 0.22, 1);
     setCssMotion(event.clientX, event.clientY, velocity);
   };
 
   const softenPointer = () => {
+    pointer.active = false;
     pointer.targetStrength = 0.16;
-    setCssMotion(window.innerWidth * 0.56, window.innerHeight * 0.42, 0);
+    setCssMotion(window.innerWidth * 0.61, window.innerHeight * 0.45, 0);
   };
 
   window.addEventListener("pointermove", handlePointerMove, { passive: true });
@@ -136,60 +157,53 @@
     return { draw, resize };
   };
 
-  const setupDrinkFlow = () => {
-    if (!flowCanvas) return null;
+  const setupViewfinderField = () => {
+    if (!viewfinderCanvas) return null;
 
-    const ctx = flowCanvas.getContext("2d", { alpha: true });
-    const particles = [];
+    const ctx = viewfinderCanvas.getContext("2d", { alpha: true });
+    const motes = [];
+    const signals = [];
     let width = 0;
     let height = 0;
     let dpr = 1;
     let spin = 0;
 
-    const palette = [
-      { fill: "rgba(22, 23, 27, 0.92)", rim: "rgba(248, 241, 223, 0.36)", glow: "rgba(169, 217, 255, 0.2)" },
-      { fill: "rgba(255, 88, 72, 0.94)", rim: "rgba(255, 230, 194, 0.68)", glow: "rgba(255, 88, 72, 0.34)" },
-      { fill: "rgba(255, 216, 77, 0.94)", rim: "rgba(248, 241, 223, 0.7)", glow: "rgba(255, 216, 77, 0.32)" },
-      { fill: "rgba(169, 217, 255, 0.9)", rim: "rgba(248, 241, 223, 0.62)", glow: "rgba(169, 217, 255, 0.34)" },
-      { fill: "rgba(240, 155, 255, 0.86)", rim: "rgba(248, 241, 223, 0.52)", glow: "rgba(240, 155, 255, 0.32)" },
-    ];
-
-    const cupBounds = (y) => {
-      const left = 0.11 + y * 0.17;
-      const right = 0.9 - y * 0.15;
-      return { left, right };
-    };
-
     const resize = () => {
-      const rect = flowCanvas.getBoundingClientRect();
+      const rect = viewfinderCanvas.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = Math.max(1, rect.width);
       height = Math.max(1, rect.height);
-      flowCanvas.width = Math.floor(width * dpr);
-      flowCanvas.height = Math.floor(height * dpr);
+      viewfinderCanvas.width = Math.floor(width * dpr);
+      viewfinderCanvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     const seed = () => {
-      particles.length = 0;
-      for (let i = 0; i < 48; i += 1) {
-        const y = 0.2 + Math.random() * 0.72;
-        const bounds = cupBounds(y);
-        particles.push({
-          x: bounds.left + Math.random() * (bounds.right - bounds.left),
-          y,
-          vx: (Math.random() - 0.5) * 0.001,
-          vy: (Math.random() - 0.5) * 0.001,
-          size: 0.024 + Math.random() * 0.036,
-          color: i % palette.length,
-          type: i % 4,
+      motes.length = 0;
+      signals.length = 0;
+      for (let i = 0; i < 110; i += 1) {
+        motes.push({
+          x: Math.random(),
+          y: Math.random(),
+          size: 0.6 + Math.random() * 1.6,
+          alpha: 0.045 + Math.random() * 0.12,
           phase: Math.random() * Math.PI * 2,
-          depth: 0.65 + Math.random() * 0.75,
+        });
+      }
+      for (let i = 0; i < 16; i += 1) {
+        signals.push({
+          x: 0.18 + Math.random() * 0.74,
+          y: 0.12 + Math.random() * 0.72,
+          vx: 0,
+          vy: 0,
+          size: 5 + Math.random() * 12,
+          phase: Math.random() * Math.PI * 2,
+          color: i % 4,
         });
       }
     };
 
-    const roundedRect = (x, y, w, h, radius) => {
+    const drawRoundedRect = (x, y, w, h, radius) => {
       const r = Math.min(radius, w * 0.5, h * 0.5);
       ctx.beginPath();
       ctx.moveTo(x + r, y);
@@ -203,139 +217,200 @@
       ctx.quadraticCurveTo(x, y, x + r, y);
     };
 
-    const drawIngredient = (particle, time) => {
-      const c = palette[particle.color];
-      const x = particle.x * width;
-      const y = particle.y * height;
-      const size = particle.size * Math.min(width, height);
-      const wobble = Math.sin(time * 0.002 + particle.phase) * 0.12;
+    const signalPalette = [
+      "rgba(255, 129, 103, 0.88)",
+      "rgba(255, 188, 109, 0.88)",
+      "rgba(145, 205, 255, 0.82)",
+      "rgba(255, 125, 178, 0.78)",
+    ];
 
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(spin * 0.45 + particle.phase + wobble);
-      ctx.shadowColor = c.glow;
-      ctx.shadowBlur = 8 + pointer.strength * 9;
-      ctx.fillStyle = c.fill;
-      ctx.strokeStyle = c.rim;
-      ctx.lineWidth = 1;
-
-      if (particle.type === 0) {
-        ctx.beginPath();
-        ctx.arc(0, 0, size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = "rgba(248, 241, 223, 0.36)";
-        ctx.beginPath();
-        ctx.arc(-size * 0.26, -size * 0.28, size * 0.24, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (particle.type === 1) {
-        roundedRect(-size * 1.25, -size * 0.58, size * 2.5, size * 1.16, size * 0.55);
-        ctx.fill();
-        ctx.stroke();
-      } else if (particle.type === 2) {
-        roundedRect(-size * 0.82, -size * 0.82, size * 1.64, size * 1.64, size * 0.28);
-        ctx.fill();
-        ctx.stroke();
-      } else {
-        ctx.beginPath();
-        for (let i = 0; i < 5; i += 1) {
-          const angle = -Math.PI / 2 + (i * Math.PI * 2) / 5;
-          const px = Math.cos(angle) * size;
-          const py = Math.sin(angle) * size;
-          if (i === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      }
-
-      ctx.restore();
-    };
-
-    const drawVortex = (time) => {
+    const drawFocusRail = (time) => {
       const cx = pointer.x * width;
       const cy = pointer.y * height;
-      const rings = 4;
-
       ctx.save();
       ctx.globalCompositeOperation = "screen";
-      ctx.translate(cx, cy);
-      ctx.rotate(spin * 1.6);
-      for (let i = 0; i < rings; i += 1) {
-        const radiusX = (0.11 + i * 0.065 + pointer.strength * 0.04) * width;
-        const radiusY = radiusX * (0.27 + i * 0.02);
+      ctx.lineWidth = 1;
+      ctx.setLineDash([14, 18]);
+      ctx.lineDashOffset = -time * 0.025;
+
+      for (let i = 0; i < 3; i += 1) {
+        const y = height * (0.22 + i * 0.24) + (pointer.y - 0.5) * (24 - i * 5);
         ctx.beginPath();
-        ctx.strokeStyle = `rgba(248, 241, 223, ${0.16 - i * 0.022 + pointer.strength * 0.065})`;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([10 + i * 4, 16 + i * 3]);
-        ctx.lineDashOffset = -time * (0.02 + i * 0.006);
-        ctx.ellipse(0, 0, radiusX, radiusY, i * 0.42, 0, Math.PI * 2);
+        ctx.moveTo(width * -0.08, y);
+        ctx.bezierCurveTo(width * 0.22, y - 80, cx - 80, cy + (i - 1) * 34, width * 1.08, y + 50);
+        ctx.strokeStyle = `rgba(248, 241, 223, ${0.075 + pointer.strength * 0.035 - i * 0.01})`;
         ctx.stroke();
       }
-      ctx.restore();
+
       ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, 112 + pointer.strength * 34, 38 + pointer.strength * 18, spin * 0.22, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 188, 109, ${0.12 + pointer.strength * 0.08})`;
+      ctx.stroke();
+      ctx.restore();
     };
 
-    const step = (time) => {
+    const drawFocusGate = () => {
+      const cx = pointer.x * width;
+      const cy = pointer.y * height;
+      const w = 110 + pointer.strength * 58;
+      const h = 68 + pointer.strength * 34;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate((pointer.x - 0.5) * 0.12);
+      ctx.strokeStyle = `rgba(248, 241, 223, ${0.18 + pointer.strength * 0.16})`;
+      ctx.lineWidth = 1;
+      const corner = 18;
+      const left = -w * 0.5;
+      const top = -h * 0.5;
+
+      ctx.beginPath();
+      ctx.moveTo(left, top + corner);
+      ctx.lineTo(left, top);
+      ctx.lineTo(left + corner, top);
+      ctx.moveTo(w * 0.5 - corner, top);
+      ctx.lineTo(w * 0.5, top);
+      ctx.lineTo(w * 0.5, top + corner);
+      ctx.moveTo(w * 0.5, h * 0.5 - corner);
+      ctx.lineTo(w * 0.5, h * 0.5);
+      ctx.lineTo(w * 0.5 - corner, h * 0.5);
+      ctx.moveTo(left + corner, h * 0.5);
+      ctx.lineTo(left, h * 0.5);
+      ctx.lineTo(left, h * 0.5 - corner);
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    const draw = (time) => {
       pointer.x = lerp(pointer.x, pointer.targetX, 0.08);
       pointer.y = lerp(pointer.y, pointer.targetY, 0.08);
       pointer.strength = lerp(pointer.strength, pointer.targetStrength, 0.06);
-      spin += 0.006 + pointer.strength * 0.03;
+      spin += 0.004 + pointer.strength * 0.018;
+
+      root.style.setProperty("--scan-spin", `${40 + spin * 24}deg`);
+      root.style.setProperty("--scan-spin-reverse", `${spin * -10.5}deg`);
+      root.style.setProperty("--focus-pulse", pointer.strength.toFixed(3));
+      root.style.setProperty("--reticle-scale", (1 + pointer.strength * 0.4).toFixed(3));
 
       ctx.clearRect(0, 0, width, height);
-      ctx.globalCompositeOperation = "source-over";
+      ctx.globalCompositeOperation = "screen";
 
-      const cx = pointer.x;
-      const cy = pointer.y;
-      const aspect = width / Math.max(height, 1);
-      particles.forEach((particle) => {
-        const dx = particle.x - cx;
-        const dy = (particle.y - cy) / aspect;
-        const dist = Math.max(0.055, Math.hypot(dx, dy));
-        const swirl = (0.00018 + pointer.strength * 0.0038) * particle.depth;
-        const pull = pointer.strength * 0.0005 * particle.depth;
+      const cx = pointer.x * width;
+      const cy = pointer.y * height;
+      const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(width, height) * 0.34);
+      glow.addColorStop(0, `rgba(255, 188, 109, ${0.08 + pointer.strength * 0.08})`);
+      glow.addColorStop(0.42, "rgba(145, 205, 255, 0.035)");
+      glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, width, height);
 
-        particle.vx += (-dy / dist) * swirl + (cx - particle.x) * pull;
-        particle.vy += (dx / dist) * swirl * aspect + (cy - particle.y) * pull * 0.66;
-        particle.vy += Math.sin(time * 0.0012 + particle.phase) * 0.00006;
-        particle.vx *= 0.934;
-        particle.vy *= 0.934;
-        particle.x += particle.vx;
-        particle.y += particle.vy;
+      drawFocusRail(time);
 
-        const bounds = cupBounds(particle.y);
-        if (particle.x < bounds.left) {
-          particle.x = bounds.left;
-          particle.vx *= -0.45;
-        }
-        if (particle.x > bounds.right) {
-          particle.x = bounds.right;
-          particle.vx *= -0.45;
-        }
-        if (particle.y < 0.15) {
-          particle.y = 0.15;
-          particle.vy *= -0.42;
-        }
-        if (particle.y > 0.92) {
-          particle.y = 0.92;
-          particle.vy *= -0.42;
-        }
-
-        drawIngredient(particle, time);
+      motes.forEach((mote) => {
+        const wave = Math.sin(time * 0.0005 + mote.phase) * 0.2;
+        const x = (mote.x + (pointer.x - 0.5) * 0.024) * width;
+        const y = (mote.y + (pointer.y - 0.5) * 0.016) * height;
+        ctx.fillStyle = `rgba(248, 241, 223, ${mote.alpha + wave * 0.018})`;
+        ctx.fillRect(x, y, mote.size, mote.size);
       });
 
-      drawVortex(time);
-      ctx.globalCompositeOperation = "source-over";
+      signals.forEach((signal) => {
+        const dx = pointer.x - signal.x;
+        const dy = pointer.y - signal.y;
+        const dist = Math.max(0.04, Math.hypot(dx, dy));
+        const pull = pointer.strength * 0.0009;
+        const orbit = 0.00032 + pointer.strength * 0.0006;
+        signal.vx += dx * pull + (-dy / dist) * orbit;
+        signal.vy += dy * pull + (dx / dist) * orbit;
+        signal.vx *= 0.94;
+        signal.vy *= 0.94;
+        signal.x = clamp(signal.x + signal.vx, 0.04, 0.96);
+        signal.y = clamp(signal.y + signal.vy, 0.04, 0.92);
 
-      root.style.setProperty("--stir-glow", pointer.strength.toFixed(3));
-      root.style.setProperty("--surface-wave", `${Math.sin(time * 0.003 + spin) * (1.5 + pointer.strength * 4.8)}px`);
-      root.style.setProperty("--orbit-spin", `${spin * 18}deg`);
+        const x = signal.x * width;
+        const y = signal.y * height;
+        const pulse = Math.sin(time * 0.0018 + signal.phase) * 0.5 + 0.5;
+        const size = signal.size + pulse * 4 + pointer.strength * 4;
+        ctx.shadowColor = signalPalette[signal.color];
+        ctx.shadowBlur = 16 + pointer.strength * 16;
+        ctx.fillStyle = signalPalette[signal.color];
+        if (signal.color === 1) {
+          drawRoundedRect(x - size * 1.35, y - size * 0.55, size * 2.7, size * 1.1, size * 0.55);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+
+      ctx.shadowBlur = 0;
+      drawFocusGate();
+      ctx.globalCompositeOperation = "source-over";
     };
 
     resize();
     seed();
-    return { draw: step, resize };
+    return { draw, resize };
+  };
+
+  const setupViewfinderShots = () => {
+    const shots = Array.from(document.querySelectorAll("[data-viewfinder-shot]"));
+    if (shots.length === 0) return null;
+
+    const states = shots.map((_, index) => ({
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      glow: 0,
+      phase: index * 0.72,
+    }));
+
+    const draw = (time) => {
+      shots.forEach((shot, index) => {
+        const rect = shot.getBoundingClientRect();
+        const state = states[index];
+        const centerX = rect.left + rect.width * 0.5;
+        const centerY = rect.top + rect.height * 0.5;
+        const dx = pointer.clientX - centerX;
+        const dy = pointer.clientY - centerY;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+        const radius = Math.max(rect.width, rect.height) * 2.1;
+        const force = pointer.active ? clamp(1 - dist / radius, 0, 1) : 0;
+        const driftX = Math.sin(time * 0.0006 + state.phase) * 1.6;
+        const driftY = Math.cos(time * 0.00054 + state.phase) * 1.2;
+
+        state.vx += dx * (force / dist) * 1.25;
+        state.vy += dy * (force / dist) * 1.05;
+        state.vx += (-state.x + driftX) * 0.08;
+        state.vy += (-state.y + driftY) * 0.08;
+        state.vx *= 0.76;
+        state.vy *= 0.76;
+        state.x = clamp(state.x + state.vx, -26, 26);
+        state.y = clamp(state.y + state.vy, -22, 22);
+        state.glow = lerp(state.glow, force, 0.13);
+
+        const localX = clamp((pointer.clientX - rect.left) / Math.max(rect.width, 1) * 100, 0, 100);
+        const localY = clamp((pointer.clientY - rect.top) / Math.max(rect.height, 1) * 100, 0, 100);
+        const tilt = clamp(state.x / 26 * 4.2, -4.2, 4.2);
+
+        shot.style.setProperty("--shot-x", `${state.x.toFixed(2)}px`);
+        shot.style.setProperty("--shot-y", `${state.y.toFixed(2)}px`);
+        shot.style.setProperty("--shot-tilt", `${tilt.toFixed(2)}deg`);
+        shot.style.setProperty("--shot-focus", state.glow.toFixed(3));
+        shot.style.setProperty("--shot-border-alpha", (0.18 + state.glow * 0.22).toFixed(3));
+        shot.style.setProperty("--shot-shadow-alpha", (state.glow * 0.14).toFixed(3));
+        shot.style.setProperty("--shot-scale", (1.03 + state.glow * 0.04).toFixed(3));
+        shot.style.setProperty("--shot-img-opacity", (0.58 + state.glow * 0.2).toFixed(3));
+        shot.style.setProperty("--shot-light-alpha", (0.08 + state.glow * 0.18).toFixed(3));
+        shot.style.setProperty("--shot-light-x", `${localX.toFixed(1)}%`);
+        shot.style.setProperty("--shot-light-y", `${localY.toFixed(1)}%`);
+      });
+    };
+
+    return { draw, resize: () => {} };
   };
 
   const setupWorkWall = () => {
@@ -438,6 +513,9 @@
         card.style.setProperty("--push-y", `${state.y.toFixed(2)}px`);
         card.style.setProperty("--tilt", `${tilt.toFixed(2)}deg`);
         card.style.setProperty("--card-glow", state.glow.toFixed(3));
+        card.style.setProperty("--card-light-alpha", (0.08 + state.glow * 0.16).toFixed(3));
+        card.style.setProperty("--card-grain-opacity", (0.12 + state.glow * 0.16).toFixed(3));
+        card.style.setProperty("--card-scale", (1.04 + state.glow * 0.025).toFixed(3));
         if (cursor.active && force > 0) updateCardLight(card, cardRect);
 
         points.push({
@@ -512,20 +590,23 @@
   };
 
   const ambient = setupAmbient();
-  const drinkFlow = setupDrinkFlow();
+  const viewfinderField = setupViewfinderField();
+  const viewfinderShots = setupViewfinderShots();
   const workWall = setupWorkWall();
   setupDeckFrame();
 
   const resizeAll = () => {
     ambient?.resize();
-    drinkFlow?.resize();
+    viewfinderField?.resize();
+    viewfinderShots?.resize();
     workWall?.resize();
   };
 
   let animationFrame = 0;
   const drawAll = (time) => {
     ambient?.draw(time);
-    drinkFlow?.draw(time);
+    viewfinderField?.draw(time);
+    viewfinderShots?.draw(time);
     workWall?.draw(time);
     if (!prefersReducedMotion.matches) {
       animationFrame = requestAnimationFrame(drawAll);
@@ -533,7 +614,7 @@
   };
 
   window.addEventListener("resize", resizeAll);
-  setCssMotion(window.innerWidth * 0.56, window.innerHeight * 0.42, 0);
+  setCssMotion(window.innerWidth * 0.61, window.innerHeight * 0.45, 0);
 
   if (prefersReducedMotion.matches) {
     drawAll(1200);

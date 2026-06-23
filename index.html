@@ -9,35 +9,45 @@ body_class: home-page
 {% assign display_works = sorted_works | where_exp: "work", "work.category != 'aigc'" %}
 {% assign work_limit = 9 %}
 
-<section class="story-hero" id="top" aria-labelledby="home-hero-title">
-    <div class="drink-stage" data-drink-stage aria-hidden="true">
-        <div class="drink-stage__halo"></div>
-        <div class="drink-stage__orbit drink-stage__orbit--outer"></div>
-        <div class="drink-stage__orbit drink-stage__orbit--inner"></div>
-        <div class="drink-stage__spoon"></div>
-        <div class="drink-cup">
-            <div class="drink-cup__back"></div>
-            <div class="drink-cup__liquid"></div>
-            <canvas class="drink-cup__flow" data-drink-flow></canvas>
-            <div class="drink-cup__surface"></div>
-            <div class="drink-cup__straw">
-                <span></span>
-            </div>
-            <div class="drink-cup__glass"></div>
-            <div class="drink-cup__rim"></div>
-            <div class="drink-cup__shine drink-cup__shine--left"></div>
-            <div class="drink-cup__shine drink-cup__shine--right"></div>
+<section class="story-hero" id="top" aria-labelledby="home-hero-title" data-viewfinder-hero>
+    <div class="viewfinder-stage" data-viewfinder-stage>
+        <canvas class="viewfinder-stage__canvas" data-viewfinder-canvas aria-hidden="true"></canvas>
+        <div class="viewfinder-stage__backdrop" aria-hidden="true"></div>
+        <div class="viewfinder-stage__rail viewfinder-stage__rail--top" aria-hidden="true"></div>
+        <div class="viewfinder-stage__rail viewfinder-stage__rail--bottom" aria-hidden="true"></div>
+        <div class="viewfinder-stage__softlight viewfinder-stage__softlight--rose" aria-hidden="true"></div>
+        <div class="viewfinder-stage__softlight viewfinder-stage__softlight--blue" aria-hidden="true"></div>
+        <div class="viewfinder-lens" data-viewfinder-lens aria-hidden="true">
+            <div class="viewfinder-lens__glass"></div>
+            <div class="viewfinder-lens__ring viewfinder-lens__ring--outer"></div>
+            <div class="viewfinder-lens__ring viewfinder-lens__ring--inner"></div>
+            <div class="viewfinder-lens__gate"></div>
+            <div class="viewfinder-lens__reticle"></div>
+            <div class="viewfinder-lens__spark viewfinder-lens__spark--one"></div>
+            <div class="viewfinder-lens__spark viewfinder-lens__spark--two"></div>
         </div>
-        <div class="drink-stage__drop drink-stage__drop--one"></div>
-        <div class="drink-stage__drop drink-stage__drop--two"></div>
-        <div class="drink-stage__drop drink-stage__drop--three"></div>
-        <div class="drink-stage__shadow"></div>
+        <div class="viewfinder-shots" data-viewfinder-shots>
+            {% for work in display_works limit: work_limit %}
+            <a href="{{ work.url | relative_url }}" class="viewfinder-shot viewfinder-shot--{{ forloop.index }}" data-viewfinder-shot style="--shot-index: {{ forloop.index0 }};">
+                <span class="viewfinder-shot__media" aria-hidden="true">
+                    {% if work.featured_image %}
+                    <img src="{{ work.featured_image | relative_url }}" alt="">
+                    {% endif %}
+                </span>
+                <span class="viewfinder-shot__meta">
+                    <span>{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span>
+                    <strong>{{ work.title }}</strong>
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="viewfinder-stage__shadow" aria-hidden="true"></div>
     </div>
     <div class="story-hero__grid" aria-hidden="true"></div>
 
     <div class="container story-hero__inner">
         <div class="story-hero__identity">
-            <span class="story-hero__eyebrow">Portfolio / 2026</span>
+            <span class="story-hero__eyebrow">Focus / 2026</span>
             <h1 id="home-hero-title">
                 <span>杨慧鑫</span>
                 <span>Visual Direction</span>
@@ -50,9 +60,9 @@ body_class: home-page
         </div>
 
         <div class="story-hero__panel" aria-hidden="true">
-            <span>Shanghai</span>
-            <span>31.2304 N</span>
-            <span>121.4737 E</span>
+            <span>01 / Work</span>
+            <span>02 / Deck</span>
+            <span>03 / AIGC</span>
         </div>
     </div>
 </section>
@@ -77,7 +87,7 @@ body_class: home-page
             <canvas class="work-wall__field" data-work-physics aria-hidden="true"></canvas>
             <div class="work-wall__grid">
             {% for work in display_works limit: work_limit %}
-                <a href="{{ work.url | relative_url }}" class="work-card" data-work-card style="--card-index: {{ forloop.index0 }};">
+                <a href="{{ work.url | relative_url }}" class="work-card" data-work-card style="--card-index: {{ forloop.index0 }}; --card-delay: {{ forloop.index0 | times: 55 }}ms;">
                     {% if work.featured_image %}
                     <span class="work-card__media" aria-hidden="true">
                         <img src="{{ work.featured_image | relative_url }}" alt="">
