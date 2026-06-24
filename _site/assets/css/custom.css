@@ -2752,9 +2752,9 @@ body::before {
     --symbol-glow: 0.16;
     min-height: calc(100svh - 76px);
     background:
-        radial-gradient(circle at var(--symbol-bg-x, 66%) var(--symbol-bg-y, 42%), rgba(255, 142, 113, 0.16), transparent 23%),
-        radial-gradient(circle at 82% 68%, rgba(134, 202, 255, 0.12), transparent 26%),
-        radial-gradient(circle at 23% 72%, rgba(255, 142, 210, 0.08), transparent 23%),
+        radial-gradient(circle at var(--symbol-bg-x, 56%) var(--symbol-bg-y, 44%), rgba(255, 142, 113, 0.18), transparent 25%),
+        radial-gradient(circle at 62% 58%, rgba(134, 202, 255, 0.16), transparent 30%),
+        radial-gradient(circle at 33% 36%, rgba(255, 142, 210, 0.08), transparent 25%),
         linear-gradient(145deg, #030303 0%, #0a0b0f 48%, #050505 100%);
 }
 
@@ -2796,48 +2796,26 @@ body::before {
     mix-blend-mode: screen;
 }
 
-.symbol-stage__type {
-    position: absolute;
-    left: 30%;
-    top: 16%;
-    z-index: 2;
-    display: grid;
-    gap: 0;
-    color: rgba(248, 241, 223, 0.9);
-    font-weight: 850;
-    font-size: clamp(5.8rem, 12vw, 13.5rem);
-    line-height: 0.78;
-    letter-spacing: 0;
-    text-transform: uppercase;
-    transform:
-        translate3d(var(--type-x, 0px), var(--type-y, 0px), 0)
-        rotate(-1deg);
-    text-shadow: 0 26px 70px rgba(0, 0, 0, 0.58);
-}
-
-.symbol-stage__type span:nth-child(2) {
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(248, 241, 223, 0.54);
-}
-
 .symbol-stage__grid {
     position: absolute;
-    left: 33%;
-    top: 14%;
+    left: 52%;
+    top: 47%;
     z-index: 1;
-    width: min(60vw, 880px);
-    height: min(70vh, 660px);
-    border: 1px solid rgba(248, 241, 223, 0.12);
-    border-radius: 8px;
+    width: min(76vw, 1080px);
+    height: min(80vh, 740px);
+    border: 1px solid rgba(248, 241, 223, 0.1);
+    border-radius: 999px;
     background:
-        linear-gradient(90deg, transparent 0 49.8%, rgba(248, 241, 223, 0.08) 49.9% 50.1%, transparent 50.2% 100%),
-        linear-gradient(180deg, transparent 0 49.8%, rgba(248, 241, 223, 0.08) 49.9% 50.1%, transparent 50.2% 100%),
-        radial-gradient(circle at 64% 45%, rgba(255, 185, 104, 0.12), transparent 32%),
+        radial-gradient(circle at 50% 50%, transparent 0 24%, rgba(248, 241, 223, 0.08) 24.1% 24.35%, transparent 24.5% 42%, rgba(134, 202, 255, 0.12) 42.1% 42.35%, transparent 42.5% 64%, rgba(255, 185, 104, 0.1) 64.1% 64.35%, transparent 64.5%),
+        linear-gradient(90deg, transparent 0 49.9%, rgba(248, 241, 223, 0.07) 49.95% 50.05%, transparent 50.1% 100%),
+        linear-gradient(180deg, transparent 0 49.9%, rgba(248, 241, 223, 0.07) 49.95% 50.05%, transparent 50.1% 100%),
+        radial-gradient(circle at 55% 48%, rgba(255, 185, 104, 0.12), transparent 35%),
         rgba(248, 241, 223, 0.028);
     box-shadow:
-        inset 0 0 72px rgba(248, 241, 223, 0.035),
+        inset 0 0 92px rgba(248, 241, 223, 0.035),
         0 40px 140px rgba(0, 0, 0, 0.52);
     transform:
+        translate(-50%, -50%)
         translate3d(var(--grid-x, 0px), var(--grid-y, 0px), 0)
         rotate(var(--grid-tilt, 0deg));
     backdrop-filter: blur(6px);
@@ -2847,15 +2825,92 @@ body::before {
 .symbol-stage__grid::after {
     content: "";
     position: absolute;
-    inset: 24px;
+    inset: 8%;
     border: 1px solid rgba(248, 241, 223, 0.08);
-    border-radius: 6px;
+    border-radius: inherit;
 }
 
 .symbol-stage__grid::after {
-    inset: 12% 18%;
-    transform: rotate(-6deg);
+    inset: 20% 25%;
+    transform: rotate(-14deg);
     border-color: rgba(134, 202, 255, 0.14);
+}
+
+.symbol-orbit {
+    position: absolute;
+    left: 52%;
+    top: 47%;
+    z-index: 4;
+    border-radius: 50%;
+    border: 1px solid rgba(248, 241, 223, 0.13);
+    transform:
+        translate(-50%, -50%)
+        translate3d(var(--orbit-x, 0px), var(--orbit-y, 0px), 0)
+        rotate(var(--orbit-rotate, -8deg));
+    mix-blend-mode: screen;
+}
+
+.symbol-orbit--outer {
+    width: min(66vw, 920px);
+    aspect-ratio: 1.42;
+    box-shadow: 0 0 70px rgba(134, 202, 255, 0.08);
+}
+
+.symbol-orbit--inner {
+    width: min(44vw, 620px);
+    aspect-ratio: 1.18;
+    border-color: rgba(255, 185, 104, 0.18);
+    transform:
+        translate(-50%, -50%)
+        translate3d(var(--orbit-inner-x, 0px), var(--orbit-inner-y, 0px), 0)
+        rotate(var(--orbit-inner-rotate, 18deg));
+}
+
+.symbol-orbit span {
+    position: absolute;
+    border-radius: 999px;
+    background: currentColor;
+    box-shadow: 0 0 30px currentColor;
+}
+
+.symbol-orbit--outer span:nth-child(1) {
+    left: 13%;
+    top: 18%;
+    width: 14px;
+    aspect-ratio: 1;
+    color: #ff8a73;
+}
+
+.symbol-orbit--outer span:nth-child(2) {
+    right: 16%;
+    top: 21%;
+    width: 18px;
+    height: 9px;
+    color: #ffce75;
+}
+
+.symbol-orbit--outer span:nth-child(3) {
+    right: 26%;
+    bottom: 8%;
+    width: 11px;
+    aspect-ratio: 1;
+    color: #86caff;
+}
+
+.symbol-orbit--inner span:nth-child(1) {
+    left: 7%;
+    bottom: 23%;
+    width: 10px;
+    aspect-ratio: 1;
+    color: #b7ffe8;
+}
+
+.symbol-orbit--inner span:nth-child(2) {
+    right: 12%;
+    top: 45%;
+    width: 13px;
+    aspect-ratio: 1;
+    color: #ff78b0;
 }
 
 .symbol-stage__rail {
@@ -2888,9 +2943,9 @@ body::before {
 }
 
 .symbol-stage__beacon--rose {
-    right: 15%;
-    top: 26%;
-    width: 54px;
+    right: 18%;
+    top: 19%;
+    width: 74px;
     aspect-ratio: 1;
     background:
         radial-gradient(circle at 35% 30%, rgba(255, 245, 222, 0.8), transparent 18%),
@@ -2900,9 +2955,9 @@ body::before {
 }
 
 .symbol-stage__beacon--blue {
-    right: 7%;
-    bottom: 19%;
-    width: 34px;
+    right: 16%;
+    bottom: 20%;
+    width: 48px;
     aspect-ratio: 1;
     background:
         radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.74), transparent 18%),
@@ -2913,10 +2968,10 @@ body::before {
 
 .symbol-pass {
     position: absolute;
-    left: 62%;
-    top: 42%;
+    left: 52%;
+    top: 47%;
     z-index: 6;
-    width: clamp(270px, 27vw, 430px);
+    width: clamp(340px, 34vw, 560px);
     aspect-ratio: 0.82;
     transform:
         translate3d(calc(-50% + var(--symbol-x, 0px)), calc(-50% + var(--symbol-y, 0px)), 0)
@@ -2939,10 +2994,10 @@ body::before {
     inset: 0;
     overflow: hidden;
     border: 1px solid rgba(248, 241, 223, 0.34);
-    border-radius: 8px;
+    border-radius: 14px;
     background:
         linear-gradient(115deg, rgba(255, 255, 255, 0.34), transparent 17% 38%, rgba(134, 202, 255, 0.18) 45%, transparent 58%, rgba(255, 138, 113, 0.22)),
-        radial-gradient(circle at var(--glass-x, 42%) var(--glass-y, 32%), rgba(255, 251, 228, 0.62), transparent 0 10%, rgba(255, 185, 104, 0.22) 12%, transparent 32%),
+        radial-gradient(circle at var(--glass-x, 42%) var(--glass-y, 32%), rgba(255, 251, 228, 0.68), transparent 0 11%, rgba(255, 185, 104, 0.22) 13%, transparent 32%),
         radial-gradient(circle at 74% 70%, rgba(134, 202, 255, 0.24), transparent 38%),
         rgba(248, 241, 223, 0.045);
     box-shadow:
@@ -2982,12 +3037,43 @@ body::before {
     left: 50%;
     top: 50%;
     z-index: 1;
-    color: rgba(248, 241, 223, 0.13);
-    font-size: clamp(5rem, 11vw, 10rem);
-    font-weight: 900;
-    line-height: 0.82;
-    letter-spacing: 0;
-    transform: translate(-50%, -50%) scaleY(1.12);
+    width: 48%;
+    aspect-ratio: 1;
+    border-radius: 42% 58% 55% 45% / 50% 44% 56% 50%;
+    background:
+        radial-gradient(circle at 34% 30%, rgba(255, 245, 222, 0.8), transparent 0 15%, rgba(255, 138, 113, 0.42) 17%, transparent 42%),
+        radial-gradient(circle at 66% 62%, rgba(134, 202, 255, 0.6), transparent 45%),
+        linear-gradient(135deg, rgba(255, 120, 176, 0.54), rgba(183, 255, 232, 0.2));
+    box-shadow:
+        inset 0 0 44px rgba(248, 241, 223, 0.08),
+        0 0 54px rgba(255, 120, 176, 0.2);
+    transform: translate(-50%, -50%) rotate(var(--glyph-rotate, -8deg));
+    mix-blend-mode: screen;
+}
+
+.symbol-pass__glyph::before,
+.symbol-pass__glyph::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+}
+
+.symbol-pass__glyph::before {
+    left: 21%;
+    top: 21%;
+    width: 22%;
+    aspect-ratio: 1;
+    background: rgba(255, 206, 117, 0.92);
+    box-shadow: 0 0 28px rgba(255, 206, 117, 0.38);
+}
+
+.symbol-pass__glyph::after {
+    right: 16%;
+    bottom: 18%;
+    width: 28%;
+    height: 12%;
+    background: rgba(134, 202, 255, 0.8);
+    box-shadow: 0 0 28px rgba(134, 202, 255, 0.32);
 }
 
 .symbol-pass__scan {
@@ -3079,8 +3165,8 @@ body::before {
 
 .symbol-route {
     position: absolute;
-    right: 8%;
-    bottom: 16%;
+    right: 12%;
+    bottom: 14%;
     z-index: 5;
     width: min(30vw, 360px);
     height: 80px;
@@ -3117,8 +3203,8 @@ body::before {
 .symbol-stage__shadow {
     position: absolute;
     z-index: 3;
-    left: 38%;
-    right: 6%;
+    left: 23%;
+    right: 17%;
     bottom: 7%;
     height: 16%;
     background: radial-gradient(ellipse, rgba(0, 0, 0, 0.74), transparent 70%);
@@ -3136,6 +3222,8 @@ body::before {
 .story-hero__inner {
     z-index: 8;
     pointer-events: none;
+    grid-template-columns: minmax(0, 330px);
+    align-items: end;
 }
 
 .story-hero__identity,
@@ -3143,30 +3231,57 @@ body::before {
     pointer-events: auto;
 }
 
+.story-hero__identity {
+    max-width: 330px;
+}
+
 .story-hero__eyebrow {
-    color: #050505;
-    background: #fff2c1;
-    box-shadow: 6px 6px 0 rgba(255, 129, 103, 0.72);
+    min-height: 22px;
+    padding: 0 8px;
+    margin-bottom: 12px;
+    color: rgba(248, 241, 223, 0.62);
+    background: rgba(248, 241, 223, 0.06);
+    border: 1px solid rgba(248, 241, 223, 0.12);
+    box-shadow: none;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
 }
 
 .story-hero h1 {
-    max-width: 740px;
-    text-shadow: 0 20px 50px rgba(0, 0, 0, 0.46);
+    max-width: 360px;
+    gap: 4px;
+    font-size: clamp(1.7rem, 2.7vw, 2.8rem);
+    line-height: 1.02;
+    text-shadow: 0 18px 40px rgba(0, 0, 0, 0.56);
 }
 
 .story-hero h1 span:nth-child(2) {
-    color: rgba(248, 241, 223, 0.08);
-    -webkit-text-stroke-color: rgba(248, 241, 223, 0.72);
+    color: rgba(248, 241, 223, 0.46);
+    font-size: 0.44em;
+    font-weight: 600;
+    -webkit-text-stroke: 0;
+}
+
+.story-hero__tags {
+    gap: 6px;
+    margin-top: 14px;
 }
 
 .story-hero__tags span {
-    background: rgba(248, 241, 223, 0.07);
+    min-height: 24px;
+    padding: 0 8px;
+    border-color: rgba(248, 241, 223, 0.12);
+    background: rgba(248, 241, 223, 0.045);
+    color: rgba(248, 241, 223, 0.54);
+    font-size: 0.68rem;
     backdrop-filter: blur(12px);
 }
 
 .story-hero__panel {
+    display: none;
     padding-bottom: 8px;
-    color: rgba(248, 241, 223, 0.72);
+    color: rgba(248, 241, 223, 0.38);
+    font-size: 0.72rem;
 }
 
 @keyframes passBreathe {
@@ -3181,19 +3296,12 @@ body::before {
 }
 
 @media (max-width: 1180px) {
-    .symbol-stage__type {
-        left: 24%;
-        font-size: clamp(5rem, 15vw, 10rem);
-    }
-
     .symbol-stage__grid {
-        left: 24%;
-        width: 78vw;
+        width: 88vw;
     }
 
     .symbol-pass {
-        left: 65%;
-        width: clamp(250px, 36vw, 380px);
+        width: clamp(310px, 42vw, 460px);
     }
 }
 
@@ -3207,31 +3315,38 @@ body::before {
         opacity: 0.86;
     }
 
-    .symbol-stage__type {
-        left: 8%;
-        top: 13%;
-        font-size: clamp(4.6rem, 24vw, 7.6rem);
-        line-height: 0.82;
-    }
-
     .symbol-stage__grid {
-        left: 8%;
-        top: 18%;
-        width: 108vw;
-        height: 58vh;
+        left: 57%;
+        top: 39%;
+        width: 126vw;
+        height: 62vh;
     }
 
     .symbol-pass {
-        left: 74%;
-        top: 35%;
-        width: min(58vw, 236px);
-        opacity: 0.86;
+        left: 57%;
+        top: 39%;
+        width: min(70vw, 280px);
+        opacity: 0.92;
+    }
+
+    .symbol-orbit {
+        left: 57%;
+        top: 39%;
+    }
+
+    .symbol-orbit--outer {
+        width: 112vw;
+    }
+
+    .symbol-orbit--inner {
+        width: 82vw;
     }
 
     .symbol-route {
         right: 7%;
-        bottom: 13%;
-        width: 42vw;
+        bottom: 15%;
+        width: 34vw;
+        opacity: 0.48;
     }
 
     .symbol-stage__beacon--rose {
@@ -3241,6 +3356,23 @@ body::before {
     }
 
     .symbol-stage__beacon--blue {
+        display: none;
+    }
+
+    .story-hero__inner {
+        grid-template-columns: 1fr;
+        padding-bottom: 30px;
+    }
+
+    .story-hero__identity {
+        max-width: 290px;
+    }
+
+    .story-hero h1 {
+        font-size: clamp(1.45rem, 8vw, 2.15rem);
+    }
+
+    .story-hero__panel {
         display: none;
     }
 }

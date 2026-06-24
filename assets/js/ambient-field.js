@@ -18,7 +18,7 @@
     targetStrength: 0.14,
     lastX: window.innerWidth * 0.5,
     lastY: window.innerHeight * 0.42,
-    clientX: window.innerWidth * 0.58,
+    clientX: window.innerWidth * 0.52,
     clientY: window.innerHeight * 0.42,
     active: false,
   };
@@ -32,8 +32,8 @@
     const viewRect = symbolCanvas?.getBoundingClientRect();
     const stageX = stageRect ? (clientX - stageRect.left) / Math.max(stageRect.width, 1) : winX;
     const stageY = stageRect ? (clientY - stageRect.top) / Math.max(stageRect.height, 1) : winY;
-    const symbolX = clamp((stageX - 0.62) * 70 + velocity * 0.01, -36, 38);
-    const symbolY = clamp((stageY - 0.42) * 54, -30, 34);
+    const symbolX = clamp((stageX - 0.52) * 78 + velocity * 0.01, -40, 42);
+    const symbolY = clamp((stageY - 0.47) * 60, -34, 36);
     const tiltX = clamp((stageX - 0.5) * 14 + velocity * 0.018, -10, 12);
     const tiltY = clamp((0.5 - stageY) * 10, -8, 8);
 
@@ -41,10 +41,14 @@
     root.style.setProperty("--hero-shift-y", `${offsetY * 24}px`);
     root.style.setProperty("--hero-tilt", `${offsetX * 3}deg`);
     root.style.setProperty("--hero-depth", `${offsetY * 18}px`);
-    root.style.setProperty("--symbol-bg-x", `${66 + offsetX * 4}%`);
-    root.style.setProperty("--symbol-bg-y", `${42 + offsetY * 4}%`);
-    root.style.setProperty("--type-x", `${offsetX * -16}px`);
-    root.style.setProperty("--type-y", `${offsetY * -10}px`);
+    root.style.setProperty("--symbol-bg-x", `${56 + offsetX * 5}%`);
+    root.style.setProperty("--symbol-bg-y", `${44 + offsetY * 5}%`);
+    root.style.setProperty("--orbit-x", `${offsetX * -20}px`);
+    root.style.setProperty("--orbit-y", `${offsetY * -12}px`);
+    root.style.setProperty("--orbit-inner-x", `${offsetX * 14}px`);
+    root.style.setProperty("--orbit-inner-y", `${offsetY * 10}px`);
+    root.style.setProperty("--orbit-rotate", `${-8 + offsetX * 5}deg`);
+    root.style.setProperty("--orbit-inner-rotate", `${18 + offsetX * -6}deg`);
     root.style.setProperty("--grid-x", `${offsetX * -12}px`);
     root.style.setProperty("--grid-y", `${offsetY * -8}px`);
     root.style.setProperty("--grid-tilt", `${offsetX * -0.8}deg`);
@@ -63,6 +67,7 @@
     root.style.setProperty("--symbol-tilt-x", `${tiltX}deg`);
     root.style.setProperty("--symbol-tilt-y", `${tiltY}deg`);
     root.style.setProperty("--symbol-rotate", `${-7 + offsetX * 2.6}deg`);
+    root.style.setProperty("--glyph-rotate", `${-8 + offsetX * 8}deg`);
     root.style.setProperty("--symbol-glow", `${pointer.targetStrength.toFixed(3)}`);
     root.style.setProperty("--symbol-glow-alpha", `${(0.06 + pointer.targetStrength * 0.16).toFixed(3)}`);
     root.style.setProperty("--route-x", `${offsetX * 12}px`);
@@ -90,7 +95,7 @@
   const softenPointer = () => {
     pointer.active = false;
     pointer.targetStrength = 0.16;
-    setCssMotion(window.innerWidth * 0.61, window.innerHeight * 0.45, 0);
+    setCssMotion(window.innerWidth * 0.52, window.innerHeight * 0.47, 0);
   };
 
   window.addEventListener("pointermove", handlePointerMove, { passive: true });
