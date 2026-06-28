@@ -1,9 +1,9 @@
 (() => {
   const root = document.documentElement;
   const ambientCanvas = document.querySelector("[data-ambient-field]");
-  const symbolCanvas = document.querySelector("[data-symbol-canvas]");
-  const hero = document.querySelector("[data-symbol-hero]");
-  const stage = document.querySelector("[data-symbol-stage]");
+  const fireworksCanvas = document.querySelector("[data-fireworks-canvas]");
+  const hero = document.querySelector("[data-fireworks-hero]");
+  const stage = document.querySelector("[data-fireworks-stage]");
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -11,15 +11,15 @@
 
   const pointer = {
     x: 0.5,
-    y: 0.42,
+    y: 0.46,
     targetX: 0.5,
-    targetY: 0.42,
+    targetY: 0.46,
     strength: 0.14,
     targetStrength: 0.14,
     lastX: window.innerWidth * 0.5,
-    lastY: window.innerHeight * 0.42,
+    lastY: window.innerHeight * 0.46,
     clientX: window.innerWidth * 0.52,
-    clientY: window.innerHeight * 0.42,
+    clientY: window.innerHeight * 0.46,
     active: false,
   };
 
@@ -29,50 +29,26 @@
     const offsetX = winX - 0.5;
     const offsetY = winY - 0.5;
     const stageRect = stage?.getBoundingClientRect();
-    const viewRect = symbolCanvas?.getBoundingClientRect();
+    const viewRect = fireworksCanvas?.getBoundingClientRect();
     const stageX = stageRect ? (clientX - stageRect.left) / Math.max(stageRect.width, 1) : winX;
     const stageY = stageRect ? (clientY - stageRect.top) / Math.max(stageRect.height, 1) : winY;
-    const symbolX = clamp((stageX - 0.52) * 78 + velocity * 0.01, -40, 42);
-    const symbolY = clamp((stageY - 0.47) * 60, -34, 36);
-    const tiltX = clamp((stageX - 0.5) * 14 + velocity * 0.018, -10, 12);
-    const tiltY = clamp((0.5 - stageY) * 10, -8, 8);
 
     root.style.setProperty("--hero-shift-x", `${offsetX * 32}px`);
     root.style.setProperty("--hero-shift-y", `${offsetY * 24}px`);
     root.style.setProperty("--hero-tilt", `${offsetX * 3}deg`);
     root.style.setProperty("--hero-depth", `${offsetY * 18}px`);
-    root.style.setProperty("--symbol-bg-x", `${56 + offsetX * 5}%`);
-    root.style.setProperty("--symbol-bg-y", `${44 + offsetY * 5}%`);
-    root.style.setProperty("--orbit-x", `${offsetX * -20}px`);
-    root.style.setProperty("--orbit-y", `${offsetY * -12}px`);
-    root.style.setProperty("--orbit-inner-x", `${offsetX * 14}px`);
-    root.style.setProperty("--orbit-inner-y", `${offsetY * 10}px`);
-    root.style.setProperty("--orbit-rotate", `${-8 + offsetX * 5}deg`);
-    root.style.setProperty("--orbit-inner-rotate", `${18 + offsetX * -6}deg`);
-    root.style.setProperty("--grid-x", `${offsetX * -12}px`);
-    root.style.setProperty("--grid-y", `${offsetY * -8}px`);
-    root.style.setProperty("--grid-tilt", `${offsetX * -0.8}deg`);
-    root.style.setProperty("--rail-one-x", `${offsetX * -16}px`);
-    root.style.setProperty("--rail-one-y", `${offsetY * -4}px`);
-    root.style.setProperty("--rail-two-x", `${offsetX * 10}px`);
-    root.style.setProperty("--rail-two-y", `${offsetY * 5}px`);
-    root.style.setProperty("--beacon-rose-x", `${offsetX * 18}px`);
-    root.style.setProperty("--beacon-rose-y", `${offsetY * 10}px`);
-    root.style.setProperty("--beacon-blue-x", `${offsetX * -18}px`);
-    root.style.setProperty("--beacon-blue-y", `${offsetY * -8}px`);
-    root.style.setProperty("--glass-x", `${42 + offsetX * 4}%`);
-    root.style.setProperty("--glass-y", `${34 + offsetY * 4}%`);
-    root.style.setProperty("--symbol-x", `${symbolX}px`);
-    root.style.setProperty("--symbol-y", `${symbolY}px`);
-    root.style.setProperty("--symbol-tilt-x", `${tiltX}deg`);
-    root.style.setProperty("--symbol-tilt-y", `${tiltY}deg`);
-    root.style.setProperty("--symbol-rotate", `${-7 + offsetX * 2.6}deg`);
-    root.style.setProperty("--glyph-rotate", `${-8 + offsetX * 8}deg`);
-    root.style.setProperty("--symbol-glow", `${pointer.targetStrength.toFixed(3)}`);
-    root.style.setProperty("--symbol-glow-alpha", `${(0.06 + pointer.targetStrength * 0.16).toFixed(3)}`);
-    root.style.setProperty("--route-x", `${offsetX * 12}px`);
-    root.style.setProperty("--route-y", `${offsetY * 8}px`);
-    root.style.setProperty("--glint-x", `${-24 + offsetX * 34}px`);
+    root.style.setProperty("--photo-x", `${offsetX * -12}px`);
+    root.style.setProperty("--photo-y", `${offsetY * -8}px`);
+    root.style.setProperty("--firework-x", `${offsetX * 18}px`);
+    root.style.setProperty("--firework-y", `${offsetY * 12}px`);
+    root.style.setProperty("--burst-x", `${offsetX * -18}px`);
+    root.style.setProperty("--burst-y", `${offsetY * -12}px`);
+    root.style.setProperty("--ascii-x", `${offsetX * 12}px`);
+    root.style.setProperty("--ascii-y", `${offsetY * 8}px`);
+    root.style.setProperty("--route-x", `${offsetX * 14}px`);
+    root.style.setProperty("--route-y", `${offsetY * 9}px`);
+    root.style.setProperty("--traveler-x", `${(stageX - 0.5) * 18 + velocity * 0.005}px`);
+    root.style.setProperty("--traveler-y", `${(stageY - 0.5) * 10}px`);
 
     pointer.clientX = clientX;
     pointer.clientY = clientY;
@@ -95,7 +71,7 @@
   const softenPointer = () => {
     pointer.active = false;
     pointer.targetStrength = 0.16;
-    setCssMotion(window.innerWidth * 0.52, window.innerHeight * 0.47, 0);
+    setCssMotion(window.innerWidth * 0.52, window.innerHeight * 0.46, 0);
   };
 
   window.addEventListener("pointermove", handlePointerMove, { passive: true });
@@ -168,194 +144,123 @@
     return { draw, resize };
   };
 
-  const setupSymbolField = () => {
-    if (!symbolCanvas) return null;
+  const setupFireworksField = () => {
+    if (!fireworksCanvas) return null;
 
-    const ctx = symbolCanvas.getContext("2d", { alpha: true });
-    const motes = [];
-    const signals = [];
+    const ctx = fireworksCanvas.getContext("2d", { alpha: true });
+    const glyphs = [];
+    const fireflies = [];
+    const glyphSet = ["1", "0", "3", "7", "*", ".", "/", "e", "v", "o"];
+    const palette = [
+      "rgba(196, 255, 97, 0.86)",
+      "rgba(255, 122, 170, 0.74)",
+      "rgba(255, 137, 86, 0.78)",
+      "rgba(112, 215, 255, 0.78)",
+      "rgba(188, 146, 255, 0.68)",
+    ];
     let width = 0;
     let height = 0;
     let dpr = 1;
-    let spin = 0;
 
     const resize = () => {
-      const rect = symbolCanvas.getBoundingClientRect();
+      const rect = fireworksCanvas.getBoundingClientRect();
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = Math.max(1, rect.width);
       height = Math.max(1, rect.height);
-      symbolCanvas.width = Math.floor(width * dpr);
-      symbolCanvas.height = Math.floor(height * dpr);
+      fireworksCanvas.width = Math.floor(width * dpr);
+      fireworksCanvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     const seed = () => {
-      motes.length = 0;
-      signals.length = 0;
-      for (let i = 0; i < 110; i += 1) {
-        motes.push({
-          x: Math.random(),
-          y: Math.random(),
-          size: 0.6 + Math.random() * 1.6,
-          alpha: 0.045 + Math.random() * 0.12,
+      glyphs.length = 0;
+      fireflies.length = 0;
+      for (let i = 0; i < 18; i += 1) {
+        glyphs.push({
+          x: 0.08 + Math.random() * 0.84,
+          y: 0.12 + Math.random() * 0.5,
+          char: glyphSet[Math.floor(Math.random() * glyphSet.length)],
+          color: palette[i % palette.length],
+          size: 13 + Math.random() * 12,
+          drift: 5 + Math.random() * 12,
           phase: Math.random() * Math.PI * 2,
+          rotate: -14 + Math.random() * 28,
         });
       }
-      for (let i = 0; i < 16; i += 1) {
-        signals.push({
-          x: 0.18 + Math.random() * 0.74,
-          y: 0.12 + Math.random() * 0.72,
-          vx: 0,
-          vy: 0,
-          size: 5 + Math.random() * 12,
+      for (let i = 0; i < 42; i += 1) {
+        fireflies.push({
+          x: 0.04 + Math.random() * 0.92,
+          y: 0.1 + Math.random() * 0.66,
+          size: 0.9 + Math.random() * 2.4,
+          color: palette[i % palette.length],
           phase: Math.random() * Math.PI * 2,
-          color: i % 4,
         });
       }
     };
 
-    const drawRoundedRect = (x, y, w, h, radius) => {
-      const r = Math.min(radius, w * 0.5, h * 0.5);
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-    };
-
-    const signalPalette = [
-      "rgba(255, 129, 103, 0.88)",
-      "rgba(255, 188, 109, 0.88)",
-      "rgba(145, 205, 255, 0.82)",
-      "rgba(255, 125, 178, 0.78)",
-    ];
-
-    const drawFocusRail = (time) => {
-      const cx = pointer.x * width;
-      const cy = pointer.y * height;
+    const drawRoute = (time) => {
       ctx.save();
       ctx.globalCompositeOperation = "screen";
+      ctx.setLineDash([5, 16]);
+      ctx.lineDashOffset = -time * 0.006;
       ctx.lineWidth = 1;
-      ctx.setLineDash([14, 18]);
-      ctx.lineDashOffset = -time * 0.025;
-
-      for (let i = 0; i < 3; i += 1) {
-        const y = height * (0.22 + i * 0.24) + (pointer.y - 0.5) * (24 - i * 5);
-        ctx.beginPath();
-        ctx.moveTo(width * -0.08, y);
-        ctx.bezierCurveTo(width * 0.22, y - 80, cx - 80, cy + (i - 1) * 34, width * 1.08, y + 50);
-        ctx.strokeStyle = `rgba(248, 241, 223, ${0.075 + pointer.strength * 0.035 - i * 0.01})`;
-        ctx.stroke();
-      }
-
+      ctx.strokeStyle = `rgba(248, 241, 223, ${0.08 + pointer.strength * 0.03})`;
+      ctx.beginPath();
+      ctx.moveTo(width * 0.28, height * 0.76);
+      ctx.bezierCurveTo(width * 0.42, height * 0.69, width * 0.58, height * 0.67, width * 0.75, height * 0.62);
+      ctx.stroke();
       ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, 112 + pointer.strength * 34, 38 + pointer.strength * 18, spin * 0.22, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(255, 188, 109, ${0.12 + pointer.strength * 0.08})`;
-      ctx.stroke();
-      ctx.restore();
-    };
-
-    const drawFocusGate = () => {
-      const cx = pointer.x * width;
-      const cy = pointer.y * height;
-      const w = 110 + pointer.strength * 58;
-      const h = 68 + pointer.strength * 34;
-
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate((pointer.x - 0.5) * 0.12);
-      ctx.strokeStyle = `rgba(248, 241, 223, ${0.18 + pointer.strength * 0.16})`;
-      ctx.lineWidth = 1;
-      const corner = 18;
-      const left = -w * 0.5;
-      const top = -h * 0.5;
-
-      ctx.beginPath();
-      ctx.moveTo(left, top + corner);
-      ctx.lineTo(left, top);
-      ctx.lineTo(left + corner, top);
-      ctx.moveTo(w * 0.5 - corner, top);
-      ctx.lineTo(w * 0.5, top);
-      ctx.lineTo(w * 0.5, top + corner);
-      ctx.moveTo(w * 0.5, h * 0.5 - corner);
-      ctx.lineTo(w * 0.5, h * 0.5);
-      ctx.lineTo(w * 0.5 - corner, h * 0.5);
-      ctx.moveTo(left + corner, h * 0.5);
-      ctx.lineTo(left, h * 0.5);
-      ctx.lineTo(left, h * 0.5 - corner);
-      ctx.stroke();
       ctx.restore();
     };
 
     const draw = (time) => {
-      pointer.x = lerp(pointer.x, pointer.targetX, 0.08);
-      pointer.y = lerp(pointer.y, pointer.targetY, 0.08);
-      pointer.strength = lerp(pointer.strength, pointer.targetStrength, 0.06);
-      spin += 0.004 + pointer.strength * 0.018;
-
-      root.style.setProperty("--symbol-glow", pointer.strength.toFixed(3));
-      root.style.setProperty("--symbol-glow-alpha", (0.06 + pointer.strength * 0.16).toFixed(3));
+      pointer.x = lerp(pointer.x, pointer.targetX, 0.07);
+      pointer.y = lerp(pointer.y, pointer.targetY, 0.07);
+      pointer.strength = lerp(pointer.strength, pointer.targetStrength, 0.055);
 
       ctx.clearRect(0, 0, width, height);
       ctx.globalCompositeOperation = "screen";
 
-      const cx = pointer.x * width;
-      const cy = pointer.y * height;
-      const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(width, height) * 0.34);
-      glow.addColorStop(0, `rgba(255, 188, 109, ${0.08 + pointer.strength * 0.08})`);
-      glow.addColorStop(0.42, "rgba(145, 205, 255, 0.035)");
+      const glowX = width * (0.54 + (pointer.x - 0.5) * 0.05);
+      const glowY = height * (0.34 + (pointer.y - 0.5) * 0.04);
+      const glow = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, Math.min(width, height) * 0.48);
+      glow.addColorStop(0, `rgba(196, 255, 97, ${0.028 + pointer.strength * 0.024})`);
+      glow.addColorStop(0.34, "rgba(112, 215, 255, 0.018)");
       glow.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = glow;
       ctx.fillRect(0, 0, width, height);
 
-      drawFocusRail(time);
+      drawRoute(time);
 
-      motes.forEach((mote) => {
-        const wave = Math.sin(time * 0.0005 + mote.phase) * 0.2;
-        const x = (mote.x + (pointer.x - 0.5) * 0.024) * width;
-        const y = (mote.y + (pointer.y - 0.5) * 0.016) * height;
-        ctx.fillStyle = `rgba(248, 241, 223, ${mote.alpha + wave * 0.018})`;
-        ctx.fillRect(x, y, mote.size, mote.size);
+      fireflies.forEach((dot) => {
+        const twinkle = Math.sin(time * 0.0014 + dot.phase) * 0.5 + 0.5;
+        const x = (dot.x + (pointer.x - 0.5) * 0.012) * width;
+        const y = (dot.y + (pointer.y - 0.5) * 0.01) * height + Math.sin(time * 0.00025 + dot.phase) * 5;
+        ctx.fillStyle = dot.color.replace(/0\.\d+\)/, `${0.16 + twinkle * 0.24})`);
+        ctx.fillRect(x, y, dot.size, dot.size);
       });
 
-      signals.forEach((signal) => {
-        const dx = pointer.x - signal.x;
-        const dy = pointer.y - signal.y;
-        const dist = Math.max(0.04, Math.hypot(dx, dy));
-        const pull = pointer.strength * 0.0009;
-        const orbit = 0.00032 + pointer.strength * 0.0006;
-        signal.vx += dx * pull + (-dy / dist) * orbit;
-        signal.vy += dy * pull + (dx / dist) * orbit;
-        signal.vx *= 0.94;
-        signal.vy *= 0.94;
-        signal.x = clamp(signal.x + signal.vx, 0.04, 0.96);
-        signal.y = clamp(signal.y + signal.vy, 0.04, 0.92);
-
-        const x = signal.x * width;
-        const y = signal.y * height;
-        const pulse = Math.sin(time * 0.0018 + signal.phase) * 0.5 + 0.5;
-        const size = signal.size + pulse * 4 + pointer.strength * 4;
-        ctx.shadowColor = signalPalette[signal.color];
-        ctx.shadowBlur = 16 + pointer.strength * 16;
-        ctx.fillStyle = signalPalette[signal.color];
-        if (signal.color === 1) {
-          drawRoundedRect(x - size * 1.35, y - size * 0.55, size * 2.7, size * 1.1, size * 0.55);
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      glyphs.forEach((glyph) => {
+        const bob = Math.sin(time * 0.00045 + glyph.phase) * glyph.drift;
+        const x = (glyph.x + (pointer.x - 0.5) * 0.018) * width;
+        const y = (glyph.y + (pointer.y - 0.5) * 0.014) * height + bob;
+        const pulse = Math.sin(time * 0.001 + glyph.phase) * 0.5 + 0.5;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((glyph.rotate + (pointer.x - 0.5) * 8) * Math.PI / 180);
+        ctx.font = `700 ${glyph.size}px "SFMono-Regular", "SF Mono", Menlo, monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.shadowColor = glyph.color;
+        ctx.shadowBlur = 8 + pointer.strength * 8;
+        ctx.fillStyle = glyph.color.replace(/0\.\d+\)/, `${0.36 + pulse * 0.24})`);
+        ctx.fillText(glyph.char, 0, 0);
+        ctx.globalAlpha = 0.18 + pulse * 0.12;
+        ctx.fillText(glyph.char, 1.4, -1.1);
+        ctx.restore();
       });
 
       ctx.shadowBlur = 0;
-      drawFocusGate();
       ctx.globalCompositeOperation = "source-over";
     };
 
@@ -541,20 +446,20 @@
   };
 
   const ambient = setupAmbient();
-  const symbolField = setupSymbolField();
+  const fireworkField = setupFireworksField();
   const workWall = setupWorkWall();
   setupDeckFrame();
 
   const resizeAll = () => {
     ambient?.resize();
-    symbolField?.resize();
+    fireworkField?.resize();
     workWall?.resize();
   };
 
   let animationFrame = 0;
   const drawAll = (time) => {
     ambient?.draw(time);
-    symbolField?.draw(time);
+    fireworkField?.draw(time);
     workWall?.draw(time);
     if (!prefersReducedMotion.matches) {
       animationFrame = requestAnimationFrame(drawAll);
@@ -562,7 +467,7 @@
   };
 
   window.addEventListener("resize", resizeAll);
-  setCssMotion(window.innerWidth * 0.61, window.innerHeight * 0.45, 0);
+  setCssMotion(window.innerWidth * 0.52, window.innerHeight * 0.46, 0);
 
   if (prefersReducedMotion.matches) {
     drawAll(1200);

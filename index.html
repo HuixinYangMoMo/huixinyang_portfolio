@@ -9,42 +9,26 @@ body_class: home-page
 {% assign display_works = sorted_works | where_exp: "work", "work.category != 'aigc'" %}
 {% assign work_limit = 9 %}
 
-<section class="story-hero" id="top" aria-labelledby="home-hero-title" data-symbol-hero>
-    <div class="symbol-stage" data-symbol-stage>
-        <canvas class="symbol-stage__canvas" data-symbol-canvas aria-hidden="true"></canvas>
-        <div class="symbol-stage__grid" aria-hidden="true"></div>
-        <div class="symbol-orbit symbol-orbit--outer" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
+<section class="story-hero" id="top" aria-labelledby="home-hero-title" data-fireworks-hero>
+    <div class="firework-stage" data-fireworks-stage>
+        <div class="firework-stage__photo" aria-hidden="true"></div>
+        <div class="firework-stage__texture" aria-hidden="true"></div>
+        <canvas class="firework-stage__canvas" data-fireworks-canvas aria-hidden="true"></canvas>
+        <div class="firework-route" aria-hidden="true">
+            <span class="firework-route__line"></span>
+            <span class="firework-route__traveler">*01</span>
         </div>
-        <div class="symbol-orbit symbol-orbit--inner" aria-hidden="true">
-            <span></span>
-            <span></span>
+        <div class="firework-burst firework-burst--one" aria-hidden="true">
+            <span>*</span><span>0</span><span>3</span><span>e</span><span>1</span>
         </div>
-        <div class="symbol-stage__rail symbol-stage__rail--one" aria-hidden="true"></div>
-        <div class="symbol-stage__rail symbol-stage__rail--two" aria-hidden="true"></div>
-        <div class="symbol-stage__beacon symbol-stage__beacon--rose" aria-hidden="true"></div>
-        <div class="symbol-stage__beacon symbol-stage__beacon--blue" aria-hidden="true"></div>
-        <div class="symbol-pass" data-symbol-pass aria-hidden="true">
-            <div class="symbol-pass__glass">
-                <span class="symbol-pass__glyph"></span>
-                <span class="symbol-pass__scan symbol-pass__scan--one"></span>
-                <span class="symbol-pass__scan symbol-pass__scan--two"></span>
-                <span class="symbol-pass__node symbol-pass__node--one"></span>
-                <span class="symbol-pass__node symbol-pass__node--two"></span>
-                <span class="symbol-pass__node symbol-pass__node--three"></span>
-            </div>
-            <div class="symbol-pass__edge symbol-pass__edge--top"></div>
-            <div class="symbol-pass__edge symbol-pass__edge--side"></div>
-            <div class="symbol-pass__glint"></div>
+        <div class="firework-burst firework-burst--two" aria-hidden="true">
+            <span>v</span><span>/</span><span>7</span><span>.</span>
         </div>
-        <div class="symbol-route" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="firework-burst firework-burst--three" aria-hidden="true">
+            <span>1</span><span>0</span><span>*</span><span>e</span>
         </div>
-        <div class="symbol-stage__shadow" aria-hidden="true"></div>
+        <div class="firework-ascii firework-ascii--one" aria-hidden="true">/ / 01<br>e e e<br>* 03</div>
+        <div class="firework-ascii firework-ascii--two" aria-hidden="true">0<br>1 8 1<br>0</div>
     </div>
     <div class="story-hero__grid" aria-hidden="true"></div>
 
